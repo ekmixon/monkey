@@ -32,5 +32,4 @@ def get_db_version(mongo_url):
     :return: version as a tuple (e.g. `(u'4', u'0', u'8')`)
     """
     client = MongoClient(mongo_url, serverSelectionTimeoutMS=100)
-    server_version = tuple(client.server_info()["version"].split("."))
-    return server_version
+    return tuple(client.server_info()["version"].split("."))

@@ -24,15 +24,15 @@ class MonkeyZTDetailsService:
             },
             {"$unset": ["events"]},
         ]
-        detail_list = list(MonkeyFindingDetails.objects.aggregate(*pipeline))
-        if detail_list:
-            details = detail_list[0]
-            details["latest_events"] = MonkeyZTDetailsService._remove_redundant_events(
-                details["event_count"], details["latest_events"]
-            )
-            return details
-        else:
+        if not (
+            detail_list := list(MonkeyFindingDetails.objects.aggregate(*pipeline))
+        ):
             raise FindingWithoutDetailsError(f"Finding {finding_id} had no details.")
+        details = detail_list[0]
+        details["latest_events"] = MonkeyZTDetailsService._remove_redundant_events(
+            details["event_count"], details["latest_events"]
+        )
+        return details
 
     @staticmethod
     def _remove_redundant_events(

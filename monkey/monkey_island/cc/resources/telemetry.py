@@ -23,7 +23,7 @@ class Telemetry(flask_restful.Resource):
         monkey_guid = request.args.get("monkey_guid")
         telem_category = request.args.get("telem_category")
         timestamp = request.args.get("timestamp")
-        if "null" == timestamp:  # special case to avoid ugly JS code...
+        if timestamp == "null":  # special case to avoid ugly JS code...
             timestamp = None
 
         result = {"timestamp": datetime.now().isoformat()}
@@ -65,10 +65,11 @@ class Telemetry(flask_restful.Resource):
 
     @staticmethod
     def telemetry_to_displayed_telemetry(telemetry):
-        monkey_guid_dict = {}
         monkeys = mongo.db.monkey.find({})
-        for monkey in monkeys:
-            monkey_guid_dict[monkey["guid"]] = NodeService.get_monkey_label(monkey)
+        monkey_guid_dict = {
+            monkey["guid"]: NodeService.get_monkey_label(monkey)
+            for monkey in monkeys
+        }
 
         objects = []
         for x in telemetry:
@@ -80,7 +81,7 @@ class Telemetry(flask_restful.Resource):
             objects.append(x)
             if x["telem_category"] == TelemCategoryEnum.SYSTEM_INFO and "credentials" in x["data"]:
                 for user in x["data"]["credentials"]:
-                    if -1 != user.find(","):
+                    if user.find(",") != -1:
                         new_user = user.replace(",", ".")
                         x["data"]["credentials"][new_user] = x["data"]["credentials"].pop(user)
 

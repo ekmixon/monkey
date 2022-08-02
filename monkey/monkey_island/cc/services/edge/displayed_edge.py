@@ -15,8 +15,7 @@ class DisplayedEdgeService:
     @staticmethod
     def get_displayed_edge_by_id(edge_id: str, for_report=False):
         edge = EdgeService.get_edge_by_id(ObjectId(edge_id))
-        displayed_edge = DisplayedEdgeService.edge_to_displayed_edge(edge, for_report)
-        return displayed_edge
+        return DisplayedEdgeService.edge_to_displayed_edge(edge, for_report)
 
     @staticmethod
     def edge_to_displayed_edge(edge: EdgeService, for_report=False):
@@ -60,10 +59,11 @@ class DisplayedEdgeService:
     @staticmethod
     def services_to_displayed_services(services, for_report=False):
         if for_report:
-            return [x for x in services]
+            return list(services)
         else:
             return [
-                x + ": " + (services[x]["name"] if "name" in services[x] else "unknown")
+                f"{x}: "
+                + (services[x]["name"] if "name" in services[x] else "unknown")
                 for x in services
             ]
 

@@ -12,7 +12,7 @@ from gevent.pywsgi import WSGIServer
 # Add the monkey_island directory to the path, to make sure imports that don't start with
 # "monkey_island." work.
 MONKEY_ISLAND_DIR_BASE_PATH = str(Path(__file__).parent.parent)
-if str(MONKEY_ISLAND_DIR_BASE_PATH) not in sys.path:
+if MONKEY_ISLAND_DIR_BASE_PATH not in sys.path:
     sys.path.insert(0, MONKEY_ISLAND_DIR_BASE_PATH)
 
 import monkey_island.cc.environment.environment_singleton as env_singleton  # noqa: E402
@@ -180,10 +180,11 @@ def _log_init_info():
         "Listening on the following URLs: {}".format(
             ", ".join(
                 [
-                    "https://{}:{}".format(x, env_singleton.env.get_island_port())
+                    f"https://{x}:{env_singleton.env.get_island_port()}"
                     for x in local_ip_addresses()
                 ]
             )
         )
     )
+
     MonkeyDownload.log_executable_hashes()

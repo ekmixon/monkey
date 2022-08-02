@@ -8,8 +8,8 @@ import infection_monkey.config
 from infection_monkey.network.HostFinger import HostFinger
 from infection_monkey.network.HostScanner import HostScanner
 
-PING_COUNT_FLAG = "-n" if "win32" == sys.platform else "-c"
-PING_TIMEOUT_FLAG = "-w" if "win32" == sys.platform else "-W"
+PING_COUNT_FLAG = "-n" if sys.platform == "win32" else "-c"
+PING_TIMEOUT_FLAG = "-w" if sys.platform == "win32" else "-W"
 TTL_REGEX_STR = r"(?<=TTL\=)[0-9]+"
 LINUX_TTL = 64
 WINDOWS_TTL = 128
@@ -22,7 +22,7 @@ class PingScanner(HostScanner, HostFinger):
 
     def __init__(self):
         self._timeout = infection_monkey.config.WormConfiguration.ping_scan_timeout
-        if not "win32" == sys.platform:
+        if sys.platform != "win32":
             self._timeout /= 1000
 
         self._devnull = open(os.devnull, "w")
@@ -32,10 +32,13 @@ class PingScanner(HostScanner, HostFinger):
         ping_cmd = self._build_ping_command(host.ip_addr)
         LOG.debug(f"Running ping command: {' '.join(ping_cmd)}")
 
-        return 0 == subprocess.call(
-            ping_cmd,
-            stdout=self._devnull,
-            stderr=self._devnull,
+        return (
+            subprocess.call(
+                ping_cmd,
+                stdout=self._devnull,
+                stderr=self._devnull,
+            )
+            == 0
         )
 
     def get_host_fingerprint(self, host):
@@ -57,16 +60,10 @@ class PingScanner(HostScanner, HostFinger):
 
         LOG.debug(f"Retrieving ping command output using {encoding} encoding")
         output = " ".join(sub_proc.communicate())
-        regex_result = self._ttl_regex.search(output)
-        if regex_result:
+        if regex_result := self._ttl_regex.search(output):
             try:
                 ttl = int(regex_result.group(0))
-                if ttl <= LINUX_TTL:
-                    host.os["type"] = "linux"
-                else:  # as far we we know, could also be OSX/BSD but lets handle that when it
-                    # comes up.
-                    host.os["type"] = "windows"
-
+                host.os["type"] = "linux" if ttl <= LINUX_TTL else "windows"
                 host.icmp = True
 
                 return True

@@ -31,15 +31,11 @@ class VictimHostGenerator(object):
         for address in net_range:
             if not self.is_ip_scannable(address):  # check if the IP should be skipped
                 continue
-            if hasattr(net_range, "domain_name"):
-                victim = VictimHost(address, net_range.domain_name)
-            else:
-                victim = VictimHost(address)
-            yield victim
+            yield VictimHost(address, net_range.domain_name) if hasattr(
+                net_range, "domain_name"
+            ) else VictimHost(address)
 
     def is_ip_scannable(self, ip_address):
         if ip_address in self.local_addresses:
             return False
-        if ip_address in self.blocked_ips:
-            return False
-        return True
+        return ip_address not in self.blocked_ips

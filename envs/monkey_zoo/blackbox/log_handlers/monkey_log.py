@@ -12,13 +12,14 @@ class MonkeyLog(object):
         self.log_dir_path = log_dir_path
 
     def download_log(self, island_client):
-        log = island_client.find_log_in_db({"monkey_id": ObjectId(self.monkey["id"])})
-        if not log:
-            LOGGER.error("Log for monkey {} not found".format(self.monkey["ip_addresses"][0]))
-            return False
-        else:
+        if log := island_client.find_log_in_db(
+            {"monkey_id": ObjectId(self.monkey["id"])}
+        ):
             self.write_log_to_file(log)
             return True
+        else:
+            LOGGER.error(f'Log for monkey {self.monkey["ip_addresses"][0]} not found')
+            return False
 
     def write_log_to_file(self, log):
         with open(self.get_log_path_for_monkey(self.monkey), "w") as log_file:
@@ -32,7 +33,7 @@ class MonkeyLog(object):
 
     @staticmethod
     def get_filename_for_monkey_log(monkey):
-        return "{}.txt".format(monkey["ip_addresses"][0])
+        return f'{monkey["ip_addresses"][0]}.txt'
 
     def get_log_path_for_monkey(self, monkey):
         return os.path.join(self.log_dir_path, MonkeyLog.get_filename_for_monkey_log(monkey))

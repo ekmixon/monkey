@@ -22,8 +22,7 @@ def obfuscate(shellcode: bytes) -> bytes:
 
 def clarify(shellcode: bytes) -> bytes:
     cipher = AES.new(KEY, AES.MODE_EAX, nonce=NONCE)
-    plaintext = cipher.decrypt(shellcode)
-    return plaintext
+    return cipher.decrypt(shellcode)
 
 
 if __name__ == "__main__":

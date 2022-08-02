@@ -67,8 +67,7 @@ class AwsService(object):
         try:
             response = local_ssm_client.describe_instance_information()
 
-            filtered_instances_data = filter_instance_data_from_aws_response(response)
-            return filtered_instances_data
+            return filter_instance_data_from_aws_response(response)
         except botocore.exceptions.ClientError as e:
-            logger.warning("AWS client error while trying to get instances: " + e)
+            logger.warning(f"AWS client error while trying to get instances: {e}")
             raise e

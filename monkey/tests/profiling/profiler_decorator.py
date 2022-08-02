@@ -29,5 +29,5 @@ def profile(sort_args=["cumulative"], print_args=[100]):
 
 
 def _get_filename_for_function(fn):
-    function_name = fn.__module__ + "." + fn.__name__
+    function_name = f"{fn.__module__}.{fn.__name__}"
     return function_name.replace(".", "_")

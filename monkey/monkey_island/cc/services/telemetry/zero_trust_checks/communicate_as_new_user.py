@@ -24,14 +24,11 @@ def check_new_user_communication(current_monkey, success, message):
 
 
 def get_attempt_event(current_monkey):
-    tried_to_communicate_event = Event.create_event(
+    return Event.create_event(
         title="Communicate as new user",
-        message="Monkey on {} tried to create a new user and communicate from it.".format(
-            current_monkey.hostname
-        ),
+        message=f"Monkey on {current_monkey.hostname} tried to create a new user and communicate from it.",
         event_type=zero_trust_consts.EVENT_TYPE_MONKEY_NETWORK,
     )
-    return tried_to_communicate_event
 
 
 def get_result_event(current_monkey, message, success):

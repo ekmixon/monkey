@@ -64,14 +64,10 @@ class CommunicateAsNewUser(PBA):
                 "Net.SecurityProtocolType]::Tls12; "
                 'Invoke-WebRequest {url} -UseBasicParsing"'
             )
+        elif shutil.which("curl") is None:
+            format_string = "wget -O/dev/null -q {url}"
         else:
-            # if curl works, we're good.
-            # If curl doesn't exist or fails and wget work, we're good.
-            # And if both don't exist: we'll call it a win.
-            if shutil.which("curl") is not None:
-                format_string = "curl {url}"
-            else:
-                format_string = "wget -O/dev/null -q {url}"
+            format_string = "curl {url}"
         return format_string.format(url=url)
 
     def send_result_telemetry(self, exit_status, commandline, username):

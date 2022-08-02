@@ -38,7 +38,10 @@ class AutoNewWindowsUser(AutoNewUser):
         super(AutoNewWindowsUser, self).__init__(username, password)
 
         windows_cmds = get_windows_commands_to_add_user(self.username, self.password, True)
-        logger.debug("Trying to add {} with commands {}".format(self.username, str(windows_cmds)))
+        logger.debug(
+            f"Trying to add {self.username} with commands {str(windows_cmds)}"
+        )
+
         _ = subprocess.check_output(windows_cmds, stderr=subprocess.STDOUT)
 
     def __enter__(self):
@@ -58,7 +61,7 @@ class AutoNewWindowsUser(AutoNewUser):
                 win32con.LOGON32_PROVIDER_DEFAULT,
             )  # Which logon provider to use - whatever Windows offers.
         except Exception as err:
-            raise NewUserError("Can't logon as {}. Error: {}".format(self.username, str(err)))
+            raise NewUserError(f"Can't logon as {self.username}. Error: {str(err)}")
         return self
 
     def run_as(self, command):
@@ -82,8 +85,9 @@ class AutoNewWindowsUser(AutoNewUser):
             thread_handle = proc_info.hThread
 
             logger.debug(
-                "Waiting for process to finish. Timeout: {}ms".format(WAIT_TIMEOUT_IN_MILLISECONDS)
+                f"Waiting for process to finish. Timeout: {WAIT_TIMEOUT_IN_MILLISECONDS}ms"
             )
+
 
             # https://social.msdn.microsoft.com/Forums/vstudio/en-US/b6d6a7ae-71e9-4edb-ac8f
             # -408d2a41750d/what-events-on-a-process-handle-signal-satisify-waitforsingleobject
@@ -104,7 +108,7 @@ class AutoNewWindowsUser(AutoNewUser):
                 if thread_handle is not None:
                     win32api.CloseHandle(thread_handle)
             except Exception as err:
-                logger.error("Close handle error: " + str(err))
+                logger.error(f"Close handle error: {str(err)}")
 
         return exit_code
 
@@ -120,22 +124,20 @@ class AutoNewWindowsUser(AutoNewUser):
         try:
             commands_to_deactivate_user = get_windows_commands_to_deactivate_user(self.username)
             logger.debug(
-                "Trying to deactivate {} with commands {}".format(
-                    self.username, str(commands_to_deactivate_user)
-                )
+                f"Trying to deactivate {self.username} with commands {str(commands_to_deactivate_user)}"
             )
+
             _ = subprocess.check_output(commands_to_deactivate_user, stderr=subprocess.STDOUT)
         except Exception as err:
-            raise NewUserError("Can't deactivate user {}. Info: {}".format(self.username, err))
+            raise NewUserError(f"Can't deactivate user {self.username}. Info: {err}")
 
     def try_delete_user(self):
         try:
             commands_to_delete_user = get_windows_commands_to_delete_user(self.username)
             logger.debug(
-                "Trying to delete {} with commands {}".format(
-                    self.username, str(commands_to_delete_user)
-                )
+                f"Trying to delete {self.username} with commands {str(commands_to_delete_user)}"
             )
+
             _ = subprocess.check_output(commands_to_delete_user, stderr=subprocess.STDOUT)
         except Exception as err:
-            raise NewUserError("Can't delete user {}. Info: {}".format(self.username, err))
+            raise NewUserError(f"Can't delete user {self.username}. Info: {err}")

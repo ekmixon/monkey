@@ -26,8 +26,7 @@ def get_linux_command_history_files():
 
     HOME_DIR = "/home/"
 
-    # get list of paths of different shell history files (default values) with place for username
-    STARTUP_FILES = [
+    return [
         file_path.format(HOME_DIR)
         for file_path in [
             "{0}{{0}}/.bash_history",  # bash
@@ -37,8 +36,6 @@ def get_linux_command_history_files():
             "{0}{{0}}/.history",  # csh, tcsh
         ]
     ]
-
-    return STARTUP_FILES
 
 
 def get_linux_usernames():

@@ -98,7 +98,7 @@ def test_file_extension_filter(tmp_path):
     files_in_dir = get_all_regular_files_in_directory(tmp_path)
     filtered_files = filter_files(files_in_dir, [file_extension_filter(valid_extensions)])
 
-    assert sorted(files[0:2]) == sorted(filtered_files)
+    assert sorted(files[:2]) == sorted(filtered_files)
 
 
 @pytest.mark.skipif(

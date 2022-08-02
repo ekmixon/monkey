@@ -40,7 +40,7 @@ class LocalMonkeyRunService:
             os.chmod(dest_path, stat.S_IRWXU | stat.S_IRWXG)
         except Exception as exc:
             logger.error("Copy file failed", exc_info=True)
-            return False, "Copy file failed: %s" % exc
+            return False, f"Copy file failed: {exc}"
 
         # run the monkey
         try:
@@ -51,6 +51,6 @@ class LocalMonkeyRunService:
             subprocess.Popen(args, cwd=LocalMonkeyRunService.DATA_DIR)
         except Exception as exc:
             logger.error("popen failed", exc_info=True)
-            return False, "popen failed: %s" % exc
+            return False, f"popen failed: {exc}"
 
         return True, ""

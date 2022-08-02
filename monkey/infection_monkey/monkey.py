@@ -95,11 +95,11 @@ class InfectionMonkey(object):
 
         if self._default_server:
             if self._default_server not in WormConfiguration.command_servers:
-                LOG.debug("Added default server: %s" % self._default_server)
+                LOG.debug(f"Added default server: {self._default_server}")
                 WormConfiguration.command_servers.insert(0, self._default_server)
             else:
                 LOG.debug(
-                    "Default server: %s is already in command servers list" % self._default_server
+                    f"Default server: {self._default_server} is already in command servers list"
                 )
 
     def start(self):
@@ -190,7 +190,7 @@ class InfectionMonkey(object):
 
     @staticmethod
     def max_propagation_depth_reached():
-        return 0 == WormConfiguration.depth
+        return WormConfiguration.depth == 0
 
     def collect_system_info_if_configured(self):
         LOG.debug("Calling for system info collection")
@@ -262,9 +262,16 @@ class InfectionMonkey(object):
                 if self._default_server:
                     if self._network.on_island(self._default_server):
                         machine.set_default_server(
-                            get_interface_to_target(machine.ip_addr)
-                            + (":" + self._default_server_port if self._default_server_port else "")
+                            (
+                                get_interface_to_target(machine.ip_addr)
+                                + (
+                                    f":{self._default_server_port}"
+                                    if self._default_server_port
+                                    else ""
+                                )
+                            )
                         )
+
                     else:
                         machine.set_default_server(self._default_server)
                     LOG.debug(
@@ -330,10 +337,11 @@ class InfectionMonkey(object):
 
     @staticmethod
     def close_tunnel():
-        tunnel_address = (
-            ControlClient.proxies.get("https", "").replace("https://", "").split(":")[0]
-        )
-        if tunnel_address:
+        if (
+            tunnel_address := ControlClient.proxies.get("https", "")
+            .replace("https://", "")
+            .split(":")[0]
+        ):
             LOG.info("Quitting tunnel %s", tunnel_address)
             tunnel.quit_tunnel(tunnel_address)
 
@@ -342,10 +350,13 @@ class InfectionMonkey(object):
         status = ScanStatus.USED if remove_monkey_dir() else ScanStatus.SCANNED
         T1107Telem(status, get_monkey_dir_path()).send()
 
-        if WormConfiguration.self_delete_in_cleanup and -1 == sys.executable.find("python"):
+        if (
+            WormConfiguration.self_delete_in_cleanup
+            and sys.executable.find("python") == -1
+        ):
             try:
                 status = None
-                if "win32" == sys.platform:
+                if sys.platform == "win32":
                     from subprocess import CREATE_NEW_CONSOLE, STARTF_USESHOWWINDOW, SW_HIDE
 
                     startupinfo = subprocess.STARTUPINFO()
@@ -463,10 +474,11 @@ class InfectionMonkey(object):
         """
         if not ControlClient.find_server(default_tunnel=self._default_tunnel):
             raise PlannedShutdownException(
-                "Monkey couldn't find server with {} default tunnel.".format(self._default_tunnel)
+                f"Monkey couldn't find server with {self._default_tunnel} default tunnel."
             )
+
         self._default_server = WormConfiguration.current_server
-        LOG.debug("default server set to: %s" % self._default_server)
+        LOG.debug(f"default server set to: {self._default_server}")
 
     def log_arguments(self):
         arg_string = " ".join([f"{key}: {value}" for key, value in vars(self._opts).items()])

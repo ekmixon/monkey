@@ -90,12 +90,13 @@ class TestMonkey:
         windows_monkey.save()
         unknown_monkey.save()
         tunneled_monkeys = Monkey.get_tunneled_monkeys()
-        test = bool(
+        test = (
             windows_monkey in tunneled_monkeys
             and unknown_monkey in tunneled_monkeys
             and linux_monkey not in tunneled_monkeys
             and len(tunneled_monkeys) == 2
         )
+
         assert test
 
     @pytest.mark.usefixtures("uses_database")
@@ -121,7 +122,7 @@ class TestMonkey:
         cache_info_after_query_1 = Monkey.get_label_by_id.storage.backend.cache_info()
         assert cache_info_after_query_1.hits == 0
         assert cache_info_after_query_1.misses == 1
-        logger.debug("1) ID: {} label: {}".format(linux_monkey.id, label))
+        logger.debug(f"1) ID: {linux_monkey.id} label: {label}")
 
         assert label is not None
         assert hostname_example in label
@@ -129,7 +130,7 @@ class TestMonkey:
 
         # should be cached
         label = Monkey.get_label_by_id(linux_monkey.id)
-        logger.debug("2) ID: {} label: {}".format(linux_monkey.id, label))
+        logger.debug(f"2) ID: {linux_monkey.id} label: {label}")
         cache_info_after_query_2 = Monkey.get_label_by_id.storage.backend.cache_info()
         assert cache_info_after_query_2.hits == 1
         assert cache_info_after_query_2.misses == 1
@@ -139,9 +140,9 @@ class TestMonkey:
 
         # should be a miss
         label = Monkey.get_label_by_id(linux_monkey.id)
-        logger.debug("3) ID: {} label: {}".format(linux_monkey.id, label))
+        logger.debug(f"3) ID: {linux_monkey.id} label: {label}")
         cache_info_after_query_3 = Monkey.get_label_by_id.storage.backend.cache_info()
-        logger.debug("Cache info: {}".format(str(cache_info_after_query_3)))
+        logger.debug(f"Cache info: {str(cache_info_after_query_3)}")
         # still 1 hit only
         assert cache_info_after_query_3.hits == 1
         assert cache_info_after_query_3.misses == 2

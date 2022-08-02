@@ -124,7 +124,7 @@ class RemoteRunAwsService:
 
     @staticmethod
     def _is_linux(os):
-        return "linux" == os
+        return os == "linux"
 
     @staticmethod
     def _get_run_monkey_cmd_linux_line(bit_text, island_ip):

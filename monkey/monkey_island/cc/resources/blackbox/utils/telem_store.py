@@ -75,7 +75,7 @@ class TestTelemStore:
     @staticmethod
     def _get_filename_by_export_telem(test_telem: ExportedTelem):
         endpoint_part = test_telem.name
-        return endpoint_part + "_" + test_telem.method
+        return f"{endpoint_part}_{test_telem.method}"
 
 
 if __name__ == "__main__":

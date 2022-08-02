@@ -50,9 +50,10 @@ class FileServHTTPRequestHandler(http.server.BaseHTTPRequestHandler):
                 total += chunk
                 start_range += chunk
 
-            if f.tell() == monkeyfs.getsize(self.filename):
-                if self.report_download(self.client_address):
-                    self.close_connection = 1
+            if f.tell() == monkeyfs.getsize(
+                self.filename
+            ) and self.report_download(self.client_address):
+                self.close_connection = 1
 
             f.close()
 
@@ -63,7 +64,7 @@ class FileServHTTPRequestHandler(http.server.BaseHTTPRequestHandler):
             f.close()
 
     def send_head(self):
-        if self.path != "/" + urllib.parse.quote(os.path.basename(self.filename)):
+        if self.path != f"/{urllib.parse.quote(os.path.basename(self.filename))}":
             self.send_error(500, "")
             return None, 0, 0
         try:
@@ -98,16 +99,16 @@ class FileServHTTPRequestHandler(http.server.BaseHTTPRequestHandler):
         self.send_header("Content-type", "application/octet-stream")
         self.send_header(
             "Content-Range",
-            "bytes " + str(start_range) + "-" + str(end_range - 1) + "/" + str(size),
+            f"bytes {start_range}-{str(end_range - 1)}/{str(size)}",
         )
+
         self.send_header("Content-Length", min(end_range - start_range, size))
         self.end_headers()
         return f, start_range, end_range
 
     def log_message(self, format_string, *args):
         LOG.debug(
-            "FileServHTTPRequestHandler: %s - - [%s] %s"
-            % (self.address_string(), self.log_date_time_string(), format_string % args)
+            f"FileServHTTPRequestHandler: {self.address_string()} - - [{self.log_date_time_string()}] {format_string % args}"
         )
 
 
@@ -118,7 +119,7 @@ class HTTPConnectProxyHandler(http.server.BaseHTTPRequestHandler):
         try:
             content_length = int(self.headers["Content-Length"])
             post_data = self.rfile.read(content_length).decode()
-            LOG.info("Received bootloader's request: {}".format(post_data))
+            LOG.info(f"Received bootloader's request: {post_data}")
             try:
                 dest_path = self.path
                 r = requests.post(  # noqa: DUO123
@@ -130,15 +131,15 @@ class HTTPConnectProxyHandler(http.server.BaseHTTPRequestHandler):
                 )
                 self.send_response(r.status_code)
             except requests.exceptions.ConnectionError as e:
-                LOG.error("Couldn't forward request to the island: {}".format(e))
+                LOG.error(f"Couldn't forward request to the island: {e}")
                 self.send_response(404)
             except Exception as e:
-                LOG.error("Failed to forward bootloader request: {}".format(e))
+                LOG.error(f"Failed to forward bootloader request: {e}")
             finally:
                 self.end_headers()
                 self.wfile.write(r.content)
         except Exception as e:
-            LOG.error("Failed receiving bootloader telemetry: {}".format(e))
+            LOG.error(f"Failed receiving bootloader telemetry: {e}")
 
     def version_string(self):
         return ""
@@ -147,7 +148,7 @@ class HTTPConnectProxyHandler(http.server.BaseHTTPRequestHandler):
         LOG.info("Received a connect request!")
         # just provide a tunnel, transfer the data with no modification
         req = self
-        req.path = "https://%s/" % req.path.replace(":443", "")
+        req.path = f'https://{req.path.replace(":443", "")}/'
 
         u = urlsplit(req.path)
         address = (u.hostname, u.port or 443)
@@ -155,9 +156,9 @@ class HTTPConnectProxyHandler(http.server.BaseHTTPRequestHandler):
             conn = socket.create_connection(address)
         except socket.error as e:
             LOG.debug(
-                "HTTPConnectProxyHandler: Got exception while trying to connect to %s: %s"
-                % (repr(address), e)
+                f"HTTPConnectProxyHandler: Got exception while trying to connect to {repr(address)}: {e}"
             )
+
             self.send_error(504)  # 504 Gateway Timeout
             return
         self.send_response(200, "Connection Established")
@@ -173,8 +174,7 @@ class HTTPConnectProxyHandler(http.server.BaseHTTPRequestHandler):
                 break
             for r in rlist:
                 other = conns[1] if r is conns[0] else conns[0]
-                data = r.recv(8192)
-                if data:
+                if data := r.recv(8192):
                     other.sendall(data)
                     keep_connection = True
                     update_last_serve_time()
@@ -182,8 +182,7 @@ class HTTPConnectProxyHandler(http.server.BaseHTTPRequestHandler):
 
     def log_message(self, format_string, *args):
         LOG.debug(
-            "HTTPConnectProxyHandler: %s - [%s] %s"
-            % (self.address_string(), self.log_date_time_string(), format_string % args)
+            f"HTTPConnectProxyHandler: {self.address_string()} - [{self.log_date_time_string()}] {format_string % args}"
         )
 
 
@@ -198,6 +197,9 @@ class HTTPServer(threading.Thread):
         threading.Thread.__init__(self)
 
     def run(self):
+
+
+
         class TempHandler(FileServHTTPRequestHandler):
             from common.utils.attack_utils import ScanStatus
             from infection_monkey.telemetry.attack.t1105_telem import T1105Telem
@@ -206,7 +208,7 @@ class HTTPServer(threading.Thread):
 
             @staticmethod
             def report_download(dest=None):
-                LOG.info("File downloaded from (%s,%s)" % (dest[0], dest[1]))
+                LOG.info(f"File downloaded from ({dest[0]},{dest[1]})")
                 TempHandler.T1105Telem(
                     TempHandler.ScanStatus.USED,
                     get_interface_to_target(dest[0]),
@@ -214,9 +216,8 @@ class HTTPServer(threading.Thread):
                     self._filename,
                 ).send()
                 self.downloads += 1
-                if not self.downloads < self.max_downloads:
-                    return True
-                return False
+                return self.downloads >= self.max_downloads
+
 
         httpd = http.server.HTTPServer((self._local_ip, self._local_port), TempHandler)
         httpd.timeout = 0.5  # this is irrelevant?
@@ -255,6 +256,9 @@ class LockedHTTPServer(threading.Thread):
         self.daemon = True
 
     def run(self):
+
+
+
         class TempHandler(FileServHTTPRequestHandler):
             from common.utils.attack_utils import ScanStatus
             from infection_monkey.telemetry.attack.t1105_telem import T1105Telem
@@ -263,7 +267,7 @@ class LockedHTTPServer(threading.Thread):
 
             @staticmethod
             def report_download(dest=None):
-                LOG.info("File downloaded from (%s,%s)" % (dest[0], dest[1]))
+                LOG.info(f"File downloaded from ({dest[0]},{dest[1]})")
                 TempHandler.T1105Telem(
                     TempHandler.ScanStatus.USED,
                     get_interface_to_target(dest[0]),
@@ -271,9 +275,8 @@ class LockedHTTPServer(threading.Thread):
                     self._filename,
                 ).send()
                 self.downloads += 1
-                if not self.downloads < self.max_downloads:
-                    return True
-                return False
+                return self.downloads >= self.max_downloads
+
 
         httpd = http.server.HTTPServer((self._local_ip, self._local_port), TempHandler)
         self.lock.release()

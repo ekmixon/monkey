@@ -49,10 +49,7 @@ class MongoDbProcess:
             self._process.kill()
 
     def is_running(self) -> bool:
-        if self._process.poll() is None:
-            return True
-
-        return False
+        return self._process.poll() is None
 
     @property
     def log_file(self) -> str:

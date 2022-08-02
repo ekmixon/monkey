@@ -46,7 +46,7 @@ class SampleMultiplier:
                 if (
                     monkey.original_guid in telem["content"]
                     or monkey.original_guid in telem["endpoint"]
-                ) and not monkey.on_island:
+                ):
                     telem["content"] = telem["content"].replace(
                         monkey.original_guid, monkey.fake_guid
                     )
@@ -77,11 +77,7 @@ class SampleMultiplier:
             monkey_present = [monkey for monkey in monkeys if monkey.original_guid == guid]
             if not monkey_present:
                 ips = [net_info["addr"] for net_info in telem["data"]["network_info"]["networks"]]
-                if set(island_ips).intersection(ips):
-                    on_island = True
-                else:
-                    on_island = False
-
+                on_island = bool(set(island_ips).intersection(ips))
                 monkeys.append(
                     FakeMonkey(
                         ips=ips,

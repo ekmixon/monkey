@@ -35,7 +35,7 @@ class TestLogsHandler(object):
         try:
             os.mkdir(self.log_dir_path)
         except Exception as e:
-            LOGGER.error("Can't create a dir for test logs: {}".format(e))
+            LOGGER.error(f"Can't create a dir for test logs: {e}")
 
     @staticmethod
     def delete_log_folder_contents(log_dir_path):
@@ -45,7 +45,7 @@ class TestLogsHandler(object):
     @staticmethod
     def parse_logs(log_paths):
         for log_path in log_paths:
-            LOGGER.info("Info from log at {}".format(log_path))
+            LOGGER.info(f"Info from log at {log_path}")
             log_parser = MonkeyLogParser(log_path)
             log_parser.print_errors()
             log_parser.print_warnings()

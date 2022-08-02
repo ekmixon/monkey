@@ -22,10 +22,7 @@ class Packet:
     def __init__(self, **kw):
         self.fields = odict(self.__class__.fields)
         for k, v in list(kw.items()):
-            if callable(v):
-                self.fields[k] = v(self.fields[k])
-            else:
-                self.fields[k] = v
+            self.fields[k] = v(self.fields[k]) if callable(v) else v
 
     def to_byte_string(self):
         content_list = [
@@ -167,17 +164,12 @@ class SMBFinger(HostFinger):
             if data[8:10] == b"\x73\x16":
                 length = struct.unpack("<H", data[43:45])[0]
                 os_version, service_client = tuple(
-                    [
-                        e.replace(b"\x00", b"").decode()
-                        for e in data[47 + length :].split(b"\x00\x00\x00")[:2]
-                    ]
+                    e.replace(b"\x00", b"").decode()
+                    for e in data[47 + length :].split(b"\x00\x00\x00")[:2]
                 )
 
-                if os_version.lower() != "unix":
-                    host.os["type"] = "windows"
-                else:
-                    host.os["type"] = "linux"
 
+                host.os["type"] = "windows" if os_version.lower() != "unix" else "linux"
                 host.services[SMB_SERVICE]["name"] = service_client
                 if "version" not in host.os:
                     host.os["version"] = os_version

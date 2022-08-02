@@ -81,18 +81,17 @@ class ConfigService:
                                (if it's in the list of encrypted config values).
         :return: The value of the requested config key.
         """
-        config_key = functools.reduce(lambda x, y: x + "." + y, config_key_as_arr)
+        config_key = functools.reduce(lambda x, y: f"{x}.{y}", config_key_as_arr)
         config = mongo.db.config.find_one(
             {"name": "initial" if is_initial_config else "newconfig"}, {config_key: 1}
         )
         for config_key_part in config_key_as_arr:
             config = config[config_key_part]
-        if should_decrypt:
-            if config_key_as_arr in ENCRYPTED_CONFIG_VALUES:
-                if isinstance(config, str):
-                    config = get_encryptor().dec(config)
-                elif isinstance(config, list):
-                    config = [get_encryptor().dec(x) for x in config]
+        if should_decrypt and config_key_as_arr in ENCRYPTED_CONFIG_VALUES:
+            if isinstance(config, str):
+                config = get_encryptor().dec(config)
+            elif isinstance(config, list):
+                config = [get_encryptor().dec(x) for x in config]
         return config
 
     @staticmethod
@@ -179,17 +178,17 @@ class ConfigService:
     def ssh_key_exists(keys, user, ip):
         return [key for key in keys if key["user"] == user and key["ip"] == ip]
 
-    def _filter_none_values(data):
-        if isinstance(data, dict):
+    def _filter_none_values(self):
+        if isinstance(self, dict):
             return {
                 k: ConfigService._filter_none_values(v)
                 for k, v in data.items()
                 if k is not None and v is not None
             }
-        elif isinstance(data, list):
+        elif isinstance(self, list):
             return [ConfigService._filter_none_values(item) for item in data if item is not None]
         else:
-            return data
+            return self
 
     @staticmethod
     def update_config(config_json, should_encrypt):
@@ -312,8 +311,7 @@ class ConfigService:
                     main_dict[property2] = sub_dict
                 instance.setdefault(property1, main_dict)
 
-            for error in validate_properties(validator, properties, instance, schema):
-                yield error
+            yield from validate_properties(validator, properties, instance, schema)
 
         return validators.extend(
             validator_class,

@@ -28,16 +28,13 @@ class InPlaceFileEncryptor:
 
     def _encrypt_file(self, filepath: Path):
         with open(filepath, "rb+") as f:
-            data = f.read(self._chunk_size)
-            while data:
+            while data := f.read(self._chunk_size):
                 num_bytes_read = len(data)
 
                 encrypted_data = self._encrypt_bytes(data)
 
                 f.seek(-num_bytes_read, 1)
                 f.write(encrypted_data)
-
-                data = f.read(self._chunk_size)
 
     def _add_extension(self, filepath: Path):
         new_filepath = filepath.with_suffix(f"{filepath.suffix}{self._new_file_extension}")

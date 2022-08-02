@@ -42,10 +42,7 @@ class T1018(AttackTechnique):
         @T1018.is_status_disabled
         def get_technique_status_and_data():
             scan_info = list(mongo.db.telemetry.aggregate(T1018.query))
-            if scan_info:
-                status = ScanStatus.USED.value
-            else:
-                status = ScanStatus.UNSCANNED.value
+            status = ScanStatus.USED.value if scan_info else ScanStatus.UNSCANNED.value
             return (status, scan_info)
 
         status, scan_info = get_technique_status_and_data()

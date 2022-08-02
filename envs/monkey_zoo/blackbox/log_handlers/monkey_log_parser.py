@@ -16,9 +16,9 @@ class MonkeyLogParser(object):
     def print_errors(self):
         errors = MonkeyLogParser.get_errors(self.log_contents)
         if len(errors) > 0:
-            LOGGER.info("Found {} errors:".format(len(errors)))
+            LOGGER.info(f"Found {len(errors)} errors:")
             for index, error_line in enumerate(errors):
-                LOGGER.info("Err #{}: {}".format(index, error_line))
+                LOGGER.info(f"Err #{index}: {error_line}")
         else:
             LOGGER.info("No errors!")
 
@@ -30,9 +30,9 @@ class MonkeyLogParser(object):
     def print_warnings(self):
         warnings = MonkeyLogParser.get_warnings(self.log_contents)
         if len(warnings) > 0:
-            LOGGER.info("Found {} warnings:".format(len(warnings)))
+            LOGGER.info(f"Found {len(warnings)} warnings:")
             for index, warning_line in enumerate(warnings):
-                LOGGER.info("Warn #{}: {}".format(index, warning_line))
+                LOGGER.info(f"Warn #{index}: {warning_line}")
         else:
             LOGGER.info("No warnings!")
 

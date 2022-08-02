@@ -13,5 +13,5 @@ def process_aws_telemetry(collector_results, monkey_guid):
         relevant_monkey.aws_instance_id = instance_id
         relevant_monkey.save()
         logger.debug(
-            "Updated Monkey {} with aws instance id {}".format(str(relevant_monkey), instance_id)
+            f"Updated Monkey {str(relevant_monkey)} with aws instance id {instance_id}"
         )

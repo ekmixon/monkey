@@ -16,22 +16,22 @@ def check_antivirus_existence(process_list_json, monkey_guid):
 
     process_list_event = Event.create_event(
         title="Process list",
-        message="Monkey on {} scanned the process list".format(current_monkey.hostname),
+        message=f"Monkey on {current_monkey.hostname} scanned the process list",
         event_type=zero_trust_consts.EVENT_TYPE_MONKEY_LOCAL,
     )
+
     events = [process_list_event]
 
     av_processes = filter_av_processes(process_list_json["process_list"])
 
-    for process in av_processes:
-        events.append(
-            Event.create_event(
-                title="Found AV process",
-                message="The process '{}' was recognized as an Anti Virus process. Process "
-                "details: {}".format(process[1]["name"], json.dumps(process[1])),
-                event_type=zero_trust_consts.EVENT_TYPE_MONKEY_LOCAL,
-            )
+    events.extend(
+        Event.create_event(
+            title="Found AV process",
+            message=f"""The process '{process[1]["name"]}' was recognized as an Anti Virus process. Process details: {json.dumps(process[1])}""",
+            event_type=zero_trust_consts.EVENT_TYPE_MONKEY_LOCAL,
         )
+        for process in av_processes
+    )
 
     if len(av_processes) > 0:
         test_status = zero_trust_consts.STATUS_PASSED

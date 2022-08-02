@@ -13,11 +13,10 @@ def set_mode(mode: IslandModeEnum):
 
 
 def get_mode() -> str:
-    if IslandMode.objects:
-        mode = IslandMode.objects[0].mode
-        return mode
-    else:
+    if not IslandMode.objects:
         raise ModeNotSetError
+    mode = IslandMode.objects[0].mode
+    return mode
 
 
 class ModeNotSetError(Exception):

@@ -58,8 +58,7 @@ def get_test_aws_instance(
             url, exc=exception["account_id"]
         )
 
-        test_aws_instance_object = AwsInstance()
-        return test_aws_instance_object
+        return AwsInstance()
 
 
 # all good data
@@ -288,8 +287,7 @@ def not_found_request_mock_instance():
         url = f"{AWS_LATEST_METADATA_URI_PREFIX}dynamic/instance-identity/document"
         m.get(url)
 
-        not_found_aws_instance_object = AwsInstance()
-        return not_found_aws_instance_object
+        return AwsInstance()
 
 
 def test_is_instance_not_found_request(not_found_request_mock_instance):

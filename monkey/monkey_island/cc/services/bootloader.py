@@ -40,8 +40,7 @@ class BootloaderService:
             group_keywords.extend(["island", "starting"])
         else:
             group_keywords.append("starting") if will_monkey_run else group_keywords.append("old")
-        node_group = NodeStates.get_by_keywords(group_keywords)
-        return node_group
+        return NodeStates.get_by_keywords(group_keywords)
 
     @staticmethod
     def get_mongo_id_for_bootloader_telem(bootloader_telem) -> ObjectId:

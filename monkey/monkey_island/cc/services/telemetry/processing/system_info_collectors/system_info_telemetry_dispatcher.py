@@ -72,10 +72,9 @@ class SystemInfoTelemetryDispatcher(object):
                     processing_function(collector_results, relevant_monkey_guid)
                 except Exception as e:
                     logger.error(
-                        "Error {} while processing {} system info telemetry".format(
-                            str(e), collector_name
-                        ),
+                        f"Error {str(e)} while processing {collector_name} system info telemetry",
                         exc_info=True,
                     )
+
         else:
-            logger.warning("Unknown system info collector name: {}".format(collector_name))
+            logger.warning(f"Unknown system info collector name: {collector_name}")

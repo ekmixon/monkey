@@ -33,8 +33,7 @@ machine_list = {
 
 @pytest.fixture(scope="class")
 def island_client(island):
-    island_client_object = MonkeyIslandClient(island)
-    yield island_client_object
+    yield MonkeyIslandClient(island)
 
 
 @pytest.mark.usefixtures("island_client")
@@ -51,7 +50,7 @@ class TestOSCompatibility(object):
                     break
         for ip, os in machine_list.items():
             if ip not in ips_that_communicated:
-                print("{} didn't communicate to island".format(os))
+                print(f"{os} didn't communicate to island")
 
         if len(ips_that_communicated) < len(machine_list):
             assert False

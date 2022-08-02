@@ -18,7 +18,7 @@ def normalize_obj(obj):
         if isinstance(value, dict):
             obj[key] = normalize_obj(value)
         if isinstance(value, list):
-            for i in range(0, len(value)):
+            for i in range(len(value)):
                 if isinstance(value[i], dict):
                     value[i] = normalize_obj(value[i])
     return obj

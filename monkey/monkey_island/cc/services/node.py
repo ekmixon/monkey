@@ -66,19 +66,13 @@ class NodeService:
         new_node["exploits"] = exploits
         new_node["accessible_from_nodes"] = accessible_from_nodes
         new_node["accessible_from_nodes_hostnames"] = accessible_from_nodes_hostnames
-        if len(edges) > 0:
-            new_node["services"] = edges[-1]["services"]
-        else:
-            new_node["services"] = []
-
+        new_node["services"] = edges[-1]["services"] if len(edges) > 0 else []
         new_node["has_log"] = monkey_island.cc.services.log.LogService.log_exists(ObjectId(node_id))
         return new_node
 
     @staticmethod
     def get_node_label(node):
-        domain_name = ""
-        if node["domain_name"]:
-            domain_name = " (" + node["domain_name"] + ")"
+        domain_name = " (" + node["domain_name"] + ")" if node["domain_name"] else ""
         return node["os"]["version"] + " : " + node["ip_addresses"][0] + domain_name
 
     @staticmethod
@@ -96,25 +90,21 @@ class NodeService:
 
     @staticmethod
     def get_monkey_manual_run(monkey):
-        for p in monkey["parent"]:
-            if p[0] != monkey["guid"]:
-                return False
-
-        return True
+        return all(p[0] == monkey["guid"] for p in monkey["parent"])
 
     @staticmethod
     def get_monkey_label(monkey):
         # todo
         label = monkey["hostname"] + " : " + monkey["ip_addresses"][0]
         ip_addresses = local_ip_addresses()
-        if len(set(monkey["ip_addresses"]).intersection(ip_addresses)) > 0:
-            label = "MonkeyIsland - " + label
+        if set(monkey["ip_addresses"]).intersection(ip_addresses):
+            label = f"MonkeyIsland - {label}"
         return label
 
     @staticmethod
     def get_monkey_group(monkey):
         keywords = []
-        if len(set(monkey["ip_addresses"]).intersection(local_ip_addresses())) != 0:
+        if set(monkey["ip_addresses"]).intersection(local_ip_addresses()):
             keywords.extend(["island", "monkey"])
         else:
             monkey_type = "manual" if NodeService.get_monkey_manual_run(monkey) else "monkey"
@@ -234,9 +224,9 @@ class NodeService:
             raise NodeCreationException("Bootloader ran on island, no need to create new node.")
 
         new_node = mongo.db.node.find_one({"ip_addresses": {"$in": bootloader_telem["ips"]}})
-        # Temporary workaround to not create a node after monkey finishes
-        monkey_node = mongo.db.monkey.find_one({"ip_addresses": {"$in": bootloader_telem["ips"]}})
-        if monkey_node:
+        if monkey_node := mongo.db.monkey.find_one(
+            {"ip_addresses": {"$in": bootloader_telem["ips"]}}
+        ):
             # Don't create new node, monkey node is already present
             return monkey_node
 
@@ -383,16 +373,12 @@ class NodeService:
     @staticmethod
     def get_node_or_monkey_by_ip(ip_address):
         node = NodeService.get_node_by_ip(ip_address)
-        if node is not None:
-            return node
-        return NodeService.get_monkey_by_ip(ip_address)
+        return node if node is not None else NodeService.get_monkey_by_ip(ip_address)
 
     @staticmethod
     def get_node_or_monkey_by_id(node_id):
         node = NodeService.get_node_by_id(node_id)
-        if node is not None:
-            return node
-        return NodeService.get_monkey_by_id(node_id)
+        return node if node is not None else NodeService.get_monkey_by_id(node_id)
 
     @staticmethod
     def get_node_hostname(node):

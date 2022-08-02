@@ -20,7 +20,6 @@ class IslandConfiguration(flask_restful.Resource):
         config_json = json.loads(request.data)
         if "reset" in config_json:
             ConfigService.reset_config()
-        else:
-            if not ConfigService.update_config(config_json, should_encrypt=True):
-                abort(400)
+        elif not ConfigService.update_config(config_json, should_encrypt=True):
+            abort(400)
         return self.get()

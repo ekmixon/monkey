@@ -15,8 +15,7 @@ class AttackConfig(object):
 
     @staticmethod
     def get_config():
-        config = mongo.db.attack.find_one({"name": "newconfig"})["properties"]
-        return config
+        return mongo.db.attack.find_one({"name": "newconfig"})["properties"]
 
     @staticmethod
     def get_technique(technique_id):
@@ -153,8 +152,9 @@ class AttackConfig(object):
                     return False
             except KeyError:
                 logger.error(
-                    "Attack technique %s is defined in schema, but not implemented." % technique
+                    f"Attack technique {technique} is defined in schema, but not implemented."
                 )
+
         return True
 
     @staticmethod

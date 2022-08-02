@@ -127,15 +127,15 @@ class PTHReportService(object):
                     "type": "shared_passwords_domain"
                     if user_info["domain_name"]
                     else "shared_passwords",
-                    "machine": user_info["hostname"]
-                    if user_info["hostname"]
-                    else user_info["domain_name"],
+                    "machine": user_info["hostname"] or user_info["domain_name"],
                     "shared_with": [
-                        PTHReportService.__build_dup_user_label(i) for i in group["cred_groups"]
+                        PTHReportService.__build_dup_user_label(i)
+                        for i in group["cred_groups"]
                     ],
-                    "is_local": False if user_info["domain_name"] else True,
+                    "is_local": not user_info["domain_name"],
                 }
             )
+
         return issues
 
     @staticmethod
@@ -264,14 +264,17 @@ class PTHReportService(object):
 
         for user in comp_users:
             # A list comp, to get all unique pairs of attackers and victims.
-            for pair in [
-                pair
-                for pair in product(user["admin_on_machines"], user["secret_location"])
-                if pair[0] != pair[1]
-            ]:
-                edges_list.append(
-                    {"from": pair[1], "to": pair[0], "id": str(pair[1]) + str(pair[0])}
-                )
+            edges_list.extend(
+                {"from": pair[1], "to": pair[0], "id": str(pair[1]) + str(pair[0])}
+                for pair in [
+                    pair
+                    for pair in product(
+                        user["admin_on_machines"], user["secret_location"]
+                    )
+                    if pair[0] != pair[1]
+                ]
+            )
+
         return edges_list
 
     @staticmethod
@@ -285,11 +288,12 @@ class PTHReportService(object):
     def get_report():
         pth_map = PTHReportService.get_pth_map()
         PTHReportService.get_strong_users_on_critical_machines_nodes()
-        report = {
+        return {
             "report_info": {
                 "strong_users_table": PTHReportService.get_strong_users_on_crit_details()
             },
-            "pthmap": {"nodes": pth_map.get("nodes"), "edges": pth_map.get("edges")},
+            "pthmap": {
+                "nodes": pth_map.get("nodes"),
+                "edges": pth_map.get("edges"),
+            },
         }
-
-        return report

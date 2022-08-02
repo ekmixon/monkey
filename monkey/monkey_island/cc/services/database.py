@@ -21,8 +21,10 @@ class Database(object):
         [
             Database.drop_collection(x)
             for x in mongo.db.collection_names()
-            if not x.startswith("system.") and not x == AttackMitigations.COLLECTION_NAME
+            if not x.startswith("system.")
+            and x != AttackMitigations.COLLECTION_NAME
         ]
+
         ConfigService.init_config()
         AttackConfig.reset_config()
         logger.info("DB was reset")
@@ -31,7 +33,7 @@ class Database(object):
     @staticmethod
     def drop_collection(collection_name: str):
         mongo.db[collection_name].drop()
-        logger.info("Dropped collection {}".format(collection_name))
+        logger.info(f"Dropped collection {collection_name}")
 
     @staticmethod
     def init_db():

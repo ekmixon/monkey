@@ -8,8 +8,7 @@ from monkey_island.cc.services.node import NodeService
 class Node(flask_restful.Resource):
     @jwt_required
     def get(self):
-        node_id = request.args.get("id")
-        if node_id:
+        if node_id := request.args.get("id"):
             return NodeService.get_displayed_node_by_id(node_id)
 
         return {}

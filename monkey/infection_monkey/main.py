@@ -45,12 +45,12 @@ LOG_CONFIG = {
 def main():
     global LOG
 
-    if 2 > len(sys.argv):
+    if len(sys.argv) < 2:
         return True
     freeze_support()  # required for multiprocessing + pyinstaller on windows
     monkey_mode = sys.argv[1]
 
-    if not (monkey_mode in [MONKEY_ARG, DROPPER_ARG]):
+    if monkey_mode not in [MONKEY_ARG, DROPPER_ARG]:
         return True
 
     config_file = EXTERNAL_CONFIG_FILE
@@ -62,13 +62,13 @@ def main():
         config_file = opts.config
     if os.path.isfile(config_file):
         # using print because config can also change log locations
-        print("Loading config from %s." % config_file)
+        print(f"Loading config from {config_file}.")
         try:
             with open(config_file) as config_fo:
                 json_dict = json.load(config_fo)
                 WormConfiguration.from_kv(json_dict)
         except ValueError as e:
-            print("Error loading config: %s, using default" % (e,))
+            print(f"Error loading config: {e}, using default")
     else:
         print(
             "Config file wasn't supplied and default path: %s wasn't found, using internal "
@@ -155,6 +155,5 @@ def main():
         monkey.cleanup()
 
 
-if "__main__" == __name__:
-    if not main():
-        sys.exit(1)
+if __name__ == "__main__" and not main():
+    sys.exit(1)

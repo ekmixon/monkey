@@ -66,5 +66,5 @@ class PostBreachTechnique(AttackTechnique, metaclass=abc.ABCMeta):
         status, info = get_technique_status_and_data()
 
         data.update(cls.get_base_data_by_status(status))
-        data.update({"info": info})
+        data["info"] = info
         return data

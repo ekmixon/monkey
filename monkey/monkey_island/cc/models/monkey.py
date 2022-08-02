@@ -114,9 +114,10 @@ class Monkey(Document):
     @staticmethod
     def get_label_by_id(object_id):
         current_monkey = Monkey.get_single_monkey_by_id(object_id)
-        label = Monkey.get_hostname_by_id(object_id) + " : " + current_monkey.ip_addresses[0]
-        if len(set(current_monkey.ip_addresses).intersection(local_ip_addresses())) > 0:
-            label = "MonkeyIsland - " + label
+        label = f"{Monkey.get_hostname_by_id(object_id)} : {current_monkey.ip_addresses[0]}"
+
+        if set(current_monkey.ip_addresses).intersection(local_ip_addresses()):
+            label = f"MonkeyIsland - {label}"
         return label
 
     @ring.lru()

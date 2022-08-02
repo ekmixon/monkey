@@ -60,7 +60,7 @@ def is_segmentation_violation(
     source_subnet_range = NetworkRange.get_range_obj(source_subnet)
     target_subnet_range = NetworkRange.get_range_obj(target_subnet)
 
-    if target_subnet_range.is_in_range(str(target_ip)):
+    if target_subnet_range.is_in_range(target_ip):
         cross_segment_ip = get_ip_in_src_and_not_in_dst(
             current_monkey.ip_addresses, source_subnet_range, target_subnet_range
         )
@@ -93,13 +93,16 @@ def check_passed_findings_for_unreached_segments(current_monkey):
 
 def create_or_add_findings_for_all_pairs(all_subnets, current_monkey):
     # Filter the subnets that this monkey is part of.
-    this_monkey_subnets = []
-    for subnet in all_subnets:
+    this_monkey_subnets = [
+        subnet
+        for subnet in all_subnets
         if (
-            get_ip_if_in_subnet(current_monkey.ip_addresses, NetworkRange.get_range_obj(subnet))
+            get_ip_if_in_subnet(
+                current_monkey.ip_addresses, NetworkRange.get_range_obj(subnet)
+            )
             is not None
-        ):
-            this_monkey_subnets.append(subnet)
+        )
+    ]
 
     # Get all the other subnets.
     other_subnets = list(set(all_subnets) - set(this_monkey_subnets))

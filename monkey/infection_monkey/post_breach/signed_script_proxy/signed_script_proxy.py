@@ -9,8 +9,7 @@ from infection_monkey.utils.environment import is_windows_os
 
 
 def get_commands_to_proxy_execution_using_signed_script():
-    windows_cmds = get_windows_commands_to_proxy_execution_using_signed_script()
-    return windows_cmds
+    return get_windows_commands_to_proxy_execution_using_signed_script()
 
 
 def cleanup_changes(original_comspec):

@@ -57,8 +57,7 @@ else:
     from fcntl import ioctl
 
     def local_ips():
-        valid_ips = [network["addr"] for network in get_host_subnets()]
-        return valid_ips
+        return [network["addr"] for network in get_host_subnets()]
 
     def get_routes():  # based on scapy implementation for route parsing
         try:
@@ -114,7 +113,7 @@ def get_free_tcp_port(min_range=1000, max_range=65535):
 
     in_use = [conn.laddr[1] for conn in psutil.net_connections()]
 
-    for i in range(min_range, max_range):
+    for _ in range(min_range, max_range):
         port = randint(start_range, max_range)
 
         if port not in in_use:
@@ -135,5 +134,5 @@ def get_interfaces_ranges():
         address_str = net_interface["addr"]
         netmask_str = net_interface["netmask"]
         # limit subnet scans to class C only
-        res.append(CidrRange(cidr_range="%s/%s" % (address_str, netmask_str)))
+        res.append(CidrRange(cidr_range=f"{address_str}/{netmask_str}"))
     return res

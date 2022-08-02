@@ -78,7 +78,11 @@ class TestDisplayedEdgeService:
         assert displayed_edge["services"] == ["tcp-8088: unknown", "tcp-22: ssh"]
         assert displayed_edge["os"] == {"type": "linux", "version": "Ubuntu-4ubuntu2.8"}
         assert displayed_edge["exploits"] == EXPLOIT_DATA_MOCK
-        assert displayed_edge["_label"] == "Ubuntu-4ubuntu3.2 " + RIGHT_ARROW + " Ubuntu-4ubuntu2.8"
+        assert (
+            displayed_edge["_label"]
+            == f"Ubuntu-4ubuntu3.2 {RIGHT_ARROW} Ubuntu-4ubuntu2.8"
+        )
+
         assert displayed_edge["group"] == "exploited"
         return displayed_edge
 

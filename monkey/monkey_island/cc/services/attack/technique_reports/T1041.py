@@ -22,10 +22,7 @@ class T1041(AttackTechnique):
                 for monkey in monkeys
                 if monkey["command_control_channel"]
             ]
-            if info:
-                status = ScanStatus.USED.value
-            else:
-                status = ScanStatus.UNSCANNED.value
+            status = ScanStatus.USED.value if info else ScanStatus.UNSCANNED.value
             return (status, info)
 
         status, info = get_technique_status_and_data()

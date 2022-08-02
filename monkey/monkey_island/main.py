@@ -18,5 +18,5 @@ def main():
     run_monkey_island()
 
 
-if "__main__" == __name__:
+if __name__ == "__main__":
     main()

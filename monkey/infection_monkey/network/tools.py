@@ -90,7 +90,10 @@ def check_tcp_ports(ip, ports, timeout=DEFAULT_TIMEOUT, get_banner=False):
     possible_ports = []
     connected_ports_sockets = []
     try:
-        LOG.debug("Connecting to the following ports %s" % ",".join((str(x) for x in ports)))
+        LOG.debug(
+            f'Connecting to the following ports {",".join((str(x) for x in ports))}'
+        )
+
         for sock, port in zip(sockets, ports):
             err = sock.connect_ex((ip, port))
             if err == 0:  # immediate connect
@@ -107,55 +110,53 @@ def check_tcp_ports(ip, ports, timeout=DEFAULT_TIMEOUT, get_banner=False):
                 continue
             LOG.warning("Failed to connect to port %s, error code is %d", port, err)
 
-        if len(possible_ports) != 0:
-            timeout = int(round(timeout))  # clamp to integer, to avoid checking input
-            sockets_to_try = possible_ports[:]
-            connected_ports_sockets = []
-            while (timeout >= 0) and sockets_to_try:
-                sock_objects = [s[1] for s in sockets_to_try]
-
-                _, writeable_sockets, _ = select.select(sock_objects, sock_objects, sock_objects, 0)
-                for s in writeable_sockets:
-                    try:  # actual test
-                        connected_ports_sockets.append((s.getpeername()[1], s))
-                    except socket.error:  # bad socket, select didn't filter it properly
-                        pass
-                sockets_to_try = [s for s in sockets_to_try if s not in connected_ports_sockets]
-                if sockets_to_try:
-                    time.sleep(SLEEP_BETWEEN_POLL)
-                    timeout -= SLEEP_BETWEEN_POLL
-
-            LOG.debug(
-                "On host %s discovered the following ports %s"
-                % (str(ip), ",".join([str(s[0]) for s in connected_ports_sockets]))
-            )
-            banners = []
-            if get_banner and (len(connected_ports_sockets) != 0):
-                readable_sockets, _, _ = select.select(
-                    [s[1] for s in connected_ports_sockets], [], [], 0
-                )
-                # read first BANNER_READ bytes. We ignore errors because service might not send a
-                # decodable byte string.
-                banners = [
-                    sock.recv(BANNER_READ).decode(errors="ignore")
-                    if sock in readable_sockets
-                    else ""
-                    for port, sock in connected_ports_sockets
-                ]
-                pass
-            # try to cleanup
-            [s[1].close() for s in possible_ports]
-            return [port for port, sock in connected_ports_sockets], banners
-        else:
+        if not possible_ports:
             return [], []
 
+        timeout = int(round(timeout))  # clamp to integer, to avoid checking input
+        sockets_to_try = possible_ports[:]
+        connected_ports_sockets = []
+        while (timeout >= 0) and sockets_to_try:
+            sock_objects = [s[1] for s in sockets_to_try]
+
+            _, writeable_sockets, _ = select.select(sock_objects, sock_objects, sock_objects, 0)
+            for s in writeable_sockets:
+                try:  # actual test
+                    connected_ports_sockets.append((s.getpeername()[1], s))
+                except socket.error:  # bad socket, select didn't filter it properly
+                    pass
+            sockets_to_try = [s for s in sockets_to_try if s not in connected_ports_sockets]
+            if sockets_to_try:
+                time.sleep(SLEEP_BETWEEN_POLL)
+                timeout -= SLEEP_BETWEEN_POLL
+
+        LOG.debug(
+            f'On host {str(ip)} discovered the following ports {",".join([str(s[0]) for s in connected_ports_sockets])}'
+        )
+
+        banners = []
+        if get_banner and connected_ports_sockets:
+            readable_sockets, _, _ = select.select(
+                [s[1] for s in connected_ports_sockets], [], [], 0
+            )
+            # read first BANNER_READ bytes. We ignore errors because service might not send a
+            # decodable byte string.
+            banners = [
+                sock.recv(BANNER_READ).decode(errors="ignore")
+                if sock in readable_sockets
+                else ""
+                for port, sock in connected_ports_sockets
+            ]
+        # try to cleanup
+        [s[1].close() for s in possible_ports]
+        return [port for port, sock in connected_ports_sockets], banners
     except socket.error as exc:
         LOG.warning("Exception when checking ports on host %s, Exception: %s", str(ip), exc)
         return [], []
 
 
 def tcp_port_to_service(port):
-    return "tcp-" + str(port)
+    return f"tcp-{str(port)}"
 
 
 def get_interface_to_target(dst):

@@ -10,13 +10,13 @@ HIDDEN_FILE_WINAPI = HOME_PATH + "\\monkey-hidden-file-winAPI"
 def get_windows_commands_to_hide_files():
     return [
         "echo",
-        "Successfully created hidden file: {}".format(HIDDEN_FILE),  # create empty file
+        f"Successfully created hidden file: {HIDDEN_FILE}",
         ">",
         HIDDEN_FILE,
         "&&",
-        "attrib",  # change file attributes
-        "+h",  # hidden attribute
-        "+s",  # system attribute
+        "attrib",
+        "+h",
+        "+s",
         HIDDEN_FILE,
         "&&",
         "type",
@@ -27,20 +27,20 @@ def get_windows_commands_to_hide_files():
 def get_windows_commands_to_hide_folders():
     return [
         "mkdir",
-        HIDDEN_FOLDER,  # make directory
+        HIDDEN_FOLDER,
         "&&",
         "attrib",
-        "+h",  # hidden attribute
-        "+s",  # system attribute
-        HIDDEN_FOLDER,  # change file attributes
+        "+h",
+        "+s",
+        HIDDEN_FOLDER,
         "&&",
         "echo",
-        "Successfully created hidden folder: {}".format(HIDDEN_FOLDER),
+        f"Successfully created hidden folder: {HIDDEN_FOLDER}",
         ">",
-        "{}\\{}".format(HIDDEN_FOLDER, "some-file"),
+        f"{HIDDEN_FOLDER}\\some-file",
         "&&",
         "type",
-        "{}\\{}".format(HIDDEN_FOLDER, "some-file"),
+        f"{HIDDEN_FOLDER}\\some-file",
     ]
 
 
@@ -62,7 +62,7 @@ def get_winAPI_to_hide_files():
             0,
         )  # template file
 
-        return "Succesfully created hidden file: {}".format(HIDDEN_FILE_WINAPI), True
+        return f"Succesfully created hidden file: {HIDDEN_FILE_WINAPI}", True
     except Exception as err:
         return str(err), False
 

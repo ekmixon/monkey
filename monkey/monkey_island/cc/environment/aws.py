@@ -11,7 +11,4 @@ class AwsEnvironment(Environment):
         self.aws_info = AwsInstance()
 
     def get_auth_users(self):
-        if self._is_registered():
-            return self._config.get_users()
-        else:
-            return []
+        return self._config.get_users() if self._is_registered() else []

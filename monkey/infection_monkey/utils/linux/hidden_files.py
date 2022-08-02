@@ -4,23 +4,23 @@ HIDDEN_FOLDER = "$HOME/.monkey-hidden-folder"
 
 def get_linux_commands_to_hide_files():
     return [
-        "touch",  # create file
+        "touch",
         HIDDEN_FILE,
-        "&&" 'echo "Successfully created hidden file: {}" |'.format(HIDDEN_FILE),  # output
-        "tee -a",  # and write to file
+        f'&&echo "Successfully created hidden file: {HIDDEN_FILE}" |',
+        "tee -a",
         HIDDEN_FILE,
     ]
 
 
 def get_linux_commands_to_hide_folders():
     return [
-        "mkdir",  # make directory
+        "mkdir",
         HIDDEN_FOLDER,
-        "&& touch",  # create file
-        "{}/{}".format(HIDDEN_FOLDER, "some-file"),  # random file in hidden folder
-        '&& echo "Successfully created hidden folder: {}" |'.format(HIDDEN_FOLDER),  # output
-        "tee -a",  # and write to file
-        "{}/{}".format(HIDDEN_FOLDER, "some-file"),  # random file in hidden folder
+        "&& touch",
+        f"{HIDDEN_FOLDER}/some-file",
+        f'&& echo "Successfully created hidden folder: {HIDDEN_FOLDER}" |',
+        "tee -a",
+        f"{HIDDEN_FOLDER}/some-file",
     ]
 
 

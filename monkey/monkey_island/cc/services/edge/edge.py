@@ -90,9 +90,7 @@ class EdgeService(Edge):
             return "exploited"
         if self.tunnel:
             return "tunnel"
-        if self.scans or self.exploits:
-            return "scan"
-        return "empty"
+        return "scan" if self.scans or self.exploits else "empty"
 
     def get_label(self) -> str:
         return f"{self.src_label} {RIGHT_ARROW} {self.dst_label}"

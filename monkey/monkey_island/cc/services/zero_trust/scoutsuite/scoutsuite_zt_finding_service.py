@@ -16,9 +16,10 @@ class ScoutSuiteZTFindingService:
     @staticmethod
     def process_rule(finding: ScoutSuiteFindingMap, rule: ScoutSuiteRule):
         existing_findings = ScoutSuiteFinding.objects(test=finding.test)
-        assert len(existing_findings) < 2, "More than one finding exists for {}".format(
-            finding.test
-        )
+        assert (
+            len(existing_findings) < 2
+        ), f"More than one finding exists for {finding.test}"
+
 
         if len(existing_findings) == 0:
             ScoutSuiteZTFindingService._create_new_finding_from_rule(finding, rule)
@@ -35,7 +36,7 @@ class ScoutSuiteZTFindingService:
 
     @staticmethod
     def get_finding_status_from_rules(rules: List[ScoutSuiteRule]) -> str:
-        if len(rules) == 0:
+        if not rules:
             return zero_trust_consts.STATUS_UNEXECUTED
         elif filter(lambda x: ScoutSuiteRuleService.is_rule_dangerous(x), rules):
             return zero_trust_consts.STATUS_FAILED

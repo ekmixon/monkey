@@ -46,13 +46,13 @@ class NetworkRange(object, metaclass=ABCMeta):
         address_str = address_str.strip()
         if NetworkRange.check_if_range(address_str):
             return IpRange(ip_range=address_str)
-        if -1 != address_str.find("/"):
+        if address_str.find("/") != -1:
             return CidrRange(cidr_range=address_str)
         return SingleIpRange(ip_address=address_str)
 
     @staticmethod
     def check_if_range(address_str):
-        if -1 != address_str.find("-"):
+        if address_str.find("-") != -1:
             ips = address_str.split("-")
             try:
                 ipaddress.ip_address(ips[0]) and ipaddress.ip_address(ips[1])
@@ -77,7 +77,7 @@ class CidrRange(NetworkRange):
         self._ip_network = ipaddress.ip_network(str(self._cidr_range), strict=False)
 
     def __repr__(self):
-        return "<CidrRange %s>" % (self._cidr_range,)
+        return f"<CidrRange {self._cidr_range}>"
 
     def is_in_range(self, ip_address):
         return ipaddress.ip_address(ip_address) in self._ip_network
@@ -97,25 +97,25 @@ class IpRange(NetworkRange):
             addresses = ip_range.split("-")
             if len(addresses) != 2:
                 raise ValueError(
-                    "Illegal IP range format: %s. Format is 192.168.0.5-192.168.0.20" % ip_range
+                    f"Illegal IP range format: {ip_range}. Format is 192.168.0.5-192.168.0.20"
                 )
+
             self._lower_end_ip, self._higher_end_ip = [x.strip() for x in addresses]
         elif (lower_end_ip is not None) and (higher_end_ip is not None):
             self._lower_end_ip = lower_end_ip.strip()
             self._higher_end_ip = higher_end_ip.strip()
         else:
-            raise ValueError("Illegal IP range: %s" % ip_range)
+            raise ValueError(f"Illegal IP range: {ip_range}")
 
         self._lower_end_ip_num = self._ip_to_number(self._lower_end_ip)
         self._higher_end_ip_num = self._ip_to_number(self._higher_end_ip)
         if self._higher_end_ip_num < self._lower_end_ip_num:
             raise ValueError(
-                "Higher end IP %s is smaller than lower end IP %s"
-                % (self._lower_end_ip, self._higher_end_ip)
+                f"Higher end IP {self._lower_end_ip} is smaller than lower end IP {self._higher_end_ip}"
             )
 
     def __repr__(self):
-        return "<IpRange %s-%s>" % (self._lower_end_ip, self._higher_end_ip)
+        return f"<IpRange {self._lower_end_ip}-{self._higher_end_ip}>"
 
     def is_in_range(self, ip_address):
         return self._lower_end_ip_num <= self._ip_to_number(ip_address) <= self._higher_end_ip_num
@@ -130,7 +130,7 @@ class SingleIpRange(NetworkRange):
         self._ip_address, self.domain_name = self.string_to_host(ip_address)
 
     def __repr__(self):
-        return "<SingleIpRange %s>" % (self._ip_address,)
+        return f"<SingleIpRange {self._ip_address}>"
 
     def __iter__(self):
         """
@@ -175,9 +175,9 @@ class SingleIpRange(NetworkRange):
                 domain_name = string_
             except socket.error:
                 LOG.error(
-                    "Your specified host: {} is not found as a domain name and"
-                    " it's not an IP address".format(string_)
+                    f"Your specified host: {string_} is not found as a domain name and it's not an IP address"
                 )
+
                 return None, string_
         # If a string_ was entered instead of IP we presume that it was domain name and translate it
         return ip, domain_name

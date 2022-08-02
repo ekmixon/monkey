@@ -27,18 +27,7 @@ class UsersPBA(PBA):
         super(UsersPBA, self).__init__(POST_BREACH_FILE_EXECUTION)
         self.filename = ""
 
-        if not is_windows_os():
-            # Add linux commands to PBA's
-            if WormConfiguration.PBA_linux_filename:
-                self.filename = WormConfiguration.PBA_linux_filename
-                if WormConfiguration.custom_PBA_linux_cmd:
-                    # Add change dir command, because user will try to access his file
-                    self.command = (
-                        DIR_CHANGE_LINUX % get_monkey_dir_path()
-                    ) + WormConfiguration.custom_PBA_linux_cmd
-            elif WormConfiguration.custom_PBA_linux_cmd:
-                self.command = WormConfiguration.custom_PBA_linux_cmd
-        else:
+        if is_windows_os():
             # Add windows commands to PBA's
             if WormConfiguration.PBA_windows_filename:
                 self.filename = WormConfiguration.PBA_windows_filename
@@ -50,6 +39,16 @@ class UsersPBA(PBA):
             elif WormConfiguration.custom_PBA_windows_cmd:
                 self.command = WormConfiguration.custom_PBA_windows_cmd
 
+        elif WormConfiguration.PBA_linux_filename:
+            self.filename = WormConfiguration.PBA_linux_filename
+            if WormConfiguration.custom_PBA_linux_cmd:
+                # Add change dir command, because user will try to access his file
+                self.command = (
+                    DIR_CHANGE_LINUX % get_monkey_dir_path()
+                ) + WormConfiguration.custom_PBA_linux_cmd
+        elif WormConfiguration.custom_PBA_linux_cmd:
+            self.command = WormConfiguration.custom_PBA_linux_cmd
+
     def _execute_default(self):
         if self.filename:
             UsersPBA.download_pba_file(get_monkey_dir_path(), self.filename)
@@ -57,12 +56,11 @@ class UsersPBA(PBA):
 
     @staticmethod
     def should_run(class_name):
-        if not is_windows_os():
-            if WormConfiguration.PBA_linux_filename or WormConfiguration.custom_PBA_linux_cmd:
-                return True
-        else:
+        if is_windows_os():
             if WormConfiguration.PBA_windows_filename or WormConfiguration.custom_PBA_windows_cmd:
                 return True
+        elif WormConfiguration.PBA_linux_filename or WormConfiguration.custom_PBA_linux_cmd:
+            return True
         return False
 
     @staticmethod
@@ -99,5 +97,5 @@ class UsersPBA(PBA):
                 written_PBA_file.write(pba_file_contents.content)
             return True
         except IOError as e:
-            LOG.error("Can not upload post breach file to target machine: %s" % e)
+            LOG.error(f"Can not upload post breach file to target machine: {e}")
             return False

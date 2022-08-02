@@ -34,19 +34,27 @@ class MitreApiInterface:
             Filter("type", "=", "relationship"),
             Filter("relationship_type", "=", "mitigates"),
         ]
-        all_techniques = file_system.query(technique_filter)
-        return all_techniques
+        return file_system.query(technique_filter)
 
     @staticmethod
     def get_stix2_external_reference_id(stix2_data) -> str:
-        for reference in stix2_data["external_references"]:
-            if reference["source_name"] == "mitre-attack" and "external_id" in reference:
-                return reference["external_id"]
-        return ""
+        return next(
+            (
+                reference["external_id"]
+                for reference in stix2_data["external_references"]
+                if reference["source_name"] == "mitre-attack"
+                and "external_id" in reference
+            ),
+            "",
+        )
 
     @staticmethod
     def get_stix2_external_reference_url(stix2_data) -> str:
-        for reference in stix2_data["external_references"]:
-            if "url" in reference:
-                return reference["url"]
-        return ""
+        return next(
+            (
+                reference["url"]
+                for reference in stix2_data["external_references"]
+                if "url" in reference
+            ),
+            "",
+        )

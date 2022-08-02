@@ -10,7 +10,7 @@ class AnalyzerLog(object):
         self.contents = ""
 
     def add_entry(self, message):
-        self.contents = "{}\n{}".format(self.contents, message)
+        self.contents = f"{self.contents}\n{message}"
 
     def get_contents(self):
-        return "{}: {}\n".format(self.name, self.contents)
+        return f"{self.name}: {self.contents}\n"

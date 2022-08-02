@@ -30,26 +30,18 @@ def build_monkey_commandline_explicitly(
     cmdline = []
 
     if parent is not None:
-        cmdline.append("-p")
-        cmdline.append(str(parent))
+        cmdline.extend(("-p", parent))
     if tunnel is not None:
-        cmdline.append("-t")
-        cmdline.append(str(tunnel))
+        cmdline.extend(("-t", tunnel))
     if server is not None:
-        cmdline.append("-s")
-        cmdline.append(str(server))
+        cmdline.extend(("-s", server))
     if depth is not None:
-        if int(depth) < 0:
-            depth = 0
-        cmdline.append("-d")
-        cmdline.append(str(depth))
+        depth = max(depth, 0)
+        cmdline.extend(("-d", str(depth)))
     if location is not None:
-        cmdline.append("-l")
-        cmdline.append(str(location))
+        cmdline.extend(("-l", location))
     if vulnerable_port is not None:
-        cmdline.append("-vp")
-        cmdline.append(str(vulnerable_port))
-
+        cmdline.extend(("-vp", vulnerable_port))
     return cmdline
 
 

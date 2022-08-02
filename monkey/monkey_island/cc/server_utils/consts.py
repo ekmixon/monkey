@@ -6,10 +6,11 @@ from monkey_island.cc.server_utils.file_utils import is_windows_os
 
 
 def get_default_data_dir() -> str:
-    if is_windows_os():
-        return r"%AppData%\monkey_island"
-    else:
-        return r"$HOME/.monkey_island"
+    return (
+        r"%AppData%\monkey_island"
+        if is_windows_os()
+        else r"$HOME/.monkey_island"
+    )
 
 
 # TODO: Figure out why windows requires the use of `os.getcwd()`. See issue #1207.

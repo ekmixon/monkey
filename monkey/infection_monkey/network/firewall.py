@@ -58,8 +58,13 @@ class WinAdvFirewall(FirewallApp):
     def add_firewall_rule(
         self, name="Firewall", direction="in", action="allow", program=sys.executable, **kwargs
     ):
-        netsh_args = {"name": name, "dir": direction, "action": action, "program": program}
-        netsh_args.update(kwargs)
+        netsh_args = {
+            "name": name,
+            "dir": direction,
+            "action": action,
+            "program": program,
+        } | kwargs
+
         try:
             if _run_netsh_cmd("advfirewall firewall add rule", netsh_args):
                 self._rules[name] = netsh_args
@@ -70,9 +75,7 @@ class WinAdvFirewall(FirewallApp):
             return None
 
     def remove_firewall_rule(self, name="Firewall", **kwargs):
-        netsh_args = {"name": name}
-        netsh_args.update(kwargs)
-
+        netsh_args = {"name": name} | kwargs
         try:
             if _run_netsh_cmd("advfirewall firewall delete rule", netsh_args):
                 if name in self._rules:
@@ -84,18 +87,17 @@ class WinAdvFirewall(FirewallApp):
             return None
 
     def listen_allowed(self, **kwargs):
-        if not self.is_enabled():
-            return True
-
-        for rule in list(self._rules.values()):
-            if (
+        return (
+            any(
                 rule.get("program") == sys.executable
-                and "in" == rule.get("dir")
-                and "allow" == rule.get("action")
-                and 4 == len(list(rule.keys()))
-            ):
-                return True
-        return False
+                and rule.get("dir") == "in"
+                and rule.get("action") == "allow"
+                and len(list(rule.keys())) == 4
+                for rule in list(self._rules.values())
+            )
+            if self.is_enabled()
+            else True
+        )
 
     def close(self):
         try:
@@ -132,11 +134,9 @@ class WinFirewall(FirewallApp):
         program=sys.executable,
         **kwargs,
     ):
-        netsh_args = {"name": name, "mode": mode, "program": program}
-        netsh_args.update(kwargs)
-
+        netsh_args = {"name": name, "mode": mode, "program": program} | kwargs
         try:
-            if _run_netsh_cmd("firewall add %s" % rule, netsh_args):
+            if _run_netsh_cmd(f"firewall add {rule}", netsh_args):
                 netsh_args["rule"] = rule
                 self._rules[name] = netsh_args
                 return True
@@ -153,10 +153,9 @@ class WinFirewall(FirewallApp):
         program=sys.executable,
         **kwargs,
     ):
-        netsh_args = {"program": program}
-        netsh_args.update(kwargs)
+        netsh_args = {"program": program} | kwargs
         try:
-            if _run_netsh_cmd("firewall delete %s" % rule, netsh_args):
+            if _run_netsh_cmd(f"firewall delete {rule}", netsh_args):
                 if name in self._rules:
                     del self._rules[name]
                 return True
@@ -166,13 +165,15 @@ class WinFirewall(FirewallApp):
             return None
 
     def listen_allowed(self, **kwargs):
-        if not self.is_enabled():
-            return True
-
-        for rule in list(self._rules.values()):
-            if rule.get("program") == sys.executable and "ENABLE" == rule.get("mode"):
-                return True
-        return False
+        return (
+            any(
+                rule.get("program") == sys.executable
+                and rule.get("mode") == "ENABLE"
+                for rule in list(self._rules.values())
+            )
+            if self.is_enabled()
+            else True
+        )
 
     def close(self):
         try:
@@ -187,9 +188,6 @@ if sys.platform == "win32":
         win_ver = int(platform.version().split(".")[0])
     except Exception:
         win_ver = 0
-    if win_ver > 5:
-        app = WinAdvFirewall()
-    else:
-        app = WinFirewall()
+    app = WinAdvFirewall() if win_ver > 5 else WinFirewall()
 else:
     app = FirewallApp()

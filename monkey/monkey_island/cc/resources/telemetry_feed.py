@@ -18,7 +18,7 @@ class TelemetryFeed(flask_restful.Resource):
     @jwt_required
     def get(self, **kw):
         timestamp = request.args.get("timestamp")
-        if "null" == timestamp or timestamp is None:  # special case to avoid ugly JS code...
+        if timestamp == "null" or timestamp is None:  # special case to avoid ugly JS code...
             telemetries = mongo.db.telemetry.find({})
         else:
             telemetries = mongo.db.telemetry.find(
@@ -66,10 +66,9 @@ class TelemetryFeed(flask_restful.Resource):
         tunnel = telem["data"]["proxy"]
         if tunnel is None:
             return "No tunnel is used."
-        else:
-            tunnel_host_ip = tunnel.split(":")[-2].replace("//", "")
-            tunnel_host = NodeService.get_monkey_by_ip(tunnel_host_ip)["hostname"]
-            return "Tunnel set up to machine: %s." % tunnel_host
+        tunnel_host_ip = tunnel.split(":")[-2].replace("//", "")
+        tunnel_host = NodeService.get_monkey_by_ip(tunnel_host_ip)["hostname"]
+        return f"Tunnel set up to machine: {tunnel_host}."
 
     @staticmethod
     def get_state_telem_brief(telem):
@@ -82,15 +81,15 @@ class TelemetryFeed(flask_restful.Resource):
     def get_exploit_telem_brief(telem):
         target = telem["data"]["machine"]["ip_addr"]
         exploiter = telem["data"]["exploiter"]
-        result = telem["data"]["result"]
-        if result:
-            return "Monkey successfully exploited %s using the %s exploiter." % (target, exploiter)
+        if result := telem["data"]["result"]:
+            return f"Monkey successfully exploited {target} using the {exploiter} exploiter."
+
         else:
-            return "Monkey failed exploiting %s using the %s exploiter." % (target, exploiter)
+            return f"Monkey failed exploiting {target} using the {exploiter} exploiter."
 
     @staticmethod
     def get_scan_telem_brief(telem):
-        return "Monkey discovered machine %s." % telem["data"]["machine"]["ip_addr"]
+        return f'Monkey discovered machine {telem["data"]["machine"]["ip_addr"]}.'
 
     @staticmethod
     def get_systeminfo_telem_brief(telem):
@@ -98,15 +97,11 @@ class TelemetryFeed(flask_restful.Resource):
 
     @staticmethod
     def get_trace_telem_brief(telem):
-        return "Trace: %s" % telem["data"]["msg"]
+        return f'Trace: {telem["data"]["msg"]}'
 
     @staticmethod
     def get_post_breach_telem_brief(telem):
-        return "%s post breach action executed on %s (%s) machine." % (
-            telem["data"][0]["name"],
-            telem["data"][0]["hostname"],
-            telem["data"][0]["ip"],
-        )
+        return f'{telem["data"][0]["name"]} post breach action executed on {telem["data"][0]["hostname"]} ({telem["data"][0]["ip"]}) machine.'
 
     @staticmethod
     def should_show_brief(telem):

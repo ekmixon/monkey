@@ -2,7 +2,7 @@ from infection_monkey.utils import bit_manipulators
 
 
 def test_flip_bits_in_single_byte():
-    for i in range(0, 256):
+    for i in range(256):
         assert bit_manipulators.flip_bits_in_single_byte(i) == (255 - i)
 
 

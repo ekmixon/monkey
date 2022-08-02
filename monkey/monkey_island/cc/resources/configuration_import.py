@@ -46,15 +46,14 @@ class ConfigurationImport(flask_restful.Resource):
         request_contents = json.loads(request.data)
         try:
             config = ConfigurationImport._get_plaintext_config_from_request(request_contents)
-            if request_contents["unsafeOptionsVerified"]:
-                ConfigurationImport.import_config(config)
-                return ResponseContents().form_response()
-            else:
+            if not request_contents["unsafeOptionsVerified"]:
                 return ResponseContents(
                     config=json.dumps(config),
                     config_schema=ConfigService.get_config_schema(),
                     import_status=ImportStatuses.UNSAFE_OPTION_VERIFICATION_REQUIRED,
                 ).form_response()
+            ConfigurationImport.import_config(config)
+            return ResponseContents().form_response()
         except InvalidCredentialsError:
             return ResponseContents(
                 import_status=ImportStatuses.INVALID_CREDENTIALS,
@@ -71,10 +70,10 @@ class ConfigurationImport(flask_restful.Resource):
     def _get_plaintext_config_from_request(request_contents: dict) -> dict:
         try:
             config = request_contents["config"]
-            if ConfigurationImport.is_config_encrypted(request_contents["config"]):
+            if ConfigurationImport.is_config_encrypted(config):
                 config = decrypt_ciphertext(config, request_contents["password"])
             return json.loads(config)
-        except (JSONDecodeError, InvalidCiphertextError):
+        except InvalidCiphertextError:
             logger.exception(
                 "Exception encountered when trying to extract plaintext configuration."
             )

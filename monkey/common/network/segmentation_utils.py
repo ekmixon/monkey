@@ -19,7 +19,11 @@ def get_ip_if_in_subnet(ip_addresses, subnet):
     :return: The first IP in ip_addresses which is in the subnet if there is one, otherwise
     returns None.
     """
-    for ip_address in ip_addresses:
-        if subnet.is_in_range(ip_address):
-            return ip_address
-    return None
+    return next(
+        (
+            ip_address
+            for ip_address in ip_addresses
+            if subnet.is_in_range(ip_address)
+        ),
+        None,
+    )

@@ -15,7 +15,7 @@ from infection_monkey.utils.environment import is_64bit_python, is_64bit_windows
 
 LOG = logging.getLogger(__name__)
 
-if "win32" == sys.platform:
+if sys.platform == "win32":
     from win32process import DETACHED_PROCESS
 else:
     DETACHED_PROCESS = 0
@@ -38,7 +38,7 @@ class WindowsUpgrader(object):
                 ) as written_monkey_file:
                     shutil.copyfileobj(downloaded_monkey_file, written_monkey_file)
         except (IOError, AttributeError) as e:
-            LOG.error("Failed to download the Monkey to the target path: %s." % e)
+            LOG.error(f"Failed to download the Monkey to the target path: {e}.")
             return
 
         monkey_options = build_monkey_commandline_explicitly(

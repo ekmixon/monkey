@@ -17,5 +17,4 @@ def get_edge_by_scan_or_exploit_telemetry(telemetry_json):
 
 
 def get_tunnel_host_ip_from_proxy_field(telemetry_json):
-    tunnel_host_ip = telemetry_json["data"]["proxy"].split(":")[-2].replace("//", "")
-    return tunnel_host_ip
+    return telemetry_json["data"]["proxy"].split(":")[-2].replace("//", "")

@@ -46,7 +46,7 @@ def isfile(path):
 
 
 def virtual_path(name):
-    return "%s%s" % (MONKEYFS_PREFIX, name)
+    return f"{MONKEYFS_PREFIX}{name}"
 
 
 # noinspection PyShadowingBuiltins

@@ -25,9 +25,7 @@ class NetEdgeService:
     def _get_uninfected_island_net_edges():
         edges = []
         monkey_ids = [x.id for x in Monkey.objects() if "tunnel" not in x]
-        count = 0
-        for monkey_id in monkey_ids:
-            count += 1
+        for count, monkey_id in enumerate(monkey_ids, start=1):
             # generating fake ID, because front end requires unique ID's for each edge. Collision
             # improbable
             fake_id = ObjectId(hex(count)[2:].zfill(24))
@@ -59,9 +57,7 @@ class NetEdgeService:
         ]
         edges = []
 
-        count = 0
-        for monkey_id in monkey_ids:
-            count += 1
+        for count, monkey_id in enumerate(monkey_ids, start=1):
             # generating fake ID, because front end requires unique ID's for each edge. Collision
             # improbable
             fake_id = ObjectId(hex(count)[2:].zfill(24))

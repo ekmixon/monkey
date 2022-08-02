@@ -65,7 +65,7 @@ class T1075(AttackTechnique):
 
         status, successful_logins = get_technique_status_and_data()
         data = {"title": T1075.technique_title()}
-        data.update({"successful_logins": successful_logins})
+        data["successful_logins"] = successful_logins
 
         data.update(T1075.get_message_and_status(status))
         data.update(T1075.get_mitigation_by_status(status))

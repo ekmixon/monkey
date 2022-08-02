@@ -16,7 +16,7 @@ class TestVictimHostGenerator(TestCase):
         test_ranges = [self.cidr_range, self.local_host_range, self.random_single_ip_range]
         generator = VictimHostGenerator(test_ranges, "10.0.0.1", [])
         victims = generator.generate_victims(chunk_size)
-        for i in range(5):  # quickly check the equally sided chunks
+        for _ in range(5):
             self.assertEqual(len(next(victims)), chunk_size)
         victim_chunk_last = next(victims)
         self.assertEqual(len(victim_chunk_last), 1)

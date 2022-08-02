@@ -7,7 +7,7 @@ ID_STRING = "M0NK3Y3XPL0ITABLE"
 # CMD prefix for windows commands
 CMD_EXE = "cmd.exe"
 CMD_CARRY_OUT = "/c"
-CMD_PREFIX = CMD_EXE + " " + CMD_CARRY_OUT
+CMD_PREFIX = f"{CMD_EXE} {CMD_CARRY_OUT}"
 DROPPER_CMDLINE_WINDOWS = "%s %%(dropper_path)s %s" % (
     CMD_PREFIX,
     DROPPER_ARG,
@@ -41,7 +41,7 @@ BITSADMIN_CMDLINE_HTTP = (
 CHMOD_MONKEY = "chmod +x %(monkey_path)s"
 RUN_MONKEY = " %(monkey_path)s %(monkey_type)s %(parameters)s"
 # Commands used to check for architecture and if machine is exploitable
-CHECK_COMMAND = "echo %s" % ID_STRING
+CHECK_COMMAND = f"echo {ID_STRING}"
 # Architecture checking commands
 GET_ARCH_WINDOWS = "wmic os get osarchitecture"
 GET_ARCH_LINUX = "lscpu"

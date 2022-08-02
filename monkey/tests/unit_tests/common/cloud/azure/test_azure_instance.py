@@ -119,8 +119,7 @@ BAD_DATA_JSON = {"": ""}
 def get_test_azure_instance(url, **kwargs):
     with requests_mock.Mocker() as m:
         m.get(url, **kwargs)
-        test_azure_instance_object = AzureInstance()
-        return test_azure_instance_object
+        return AzureInstance()
 
 
 # good request, good data

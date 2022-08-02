@@ -52,25 +52,27 @@ class MonkeyIslandRequests(object):
             return self.get_jwt_from_server()
         except requests.ConnectionError as err:
             LOGGER.error(
-                "Unable to connect to island, aborting! Error information: {}. Server: {}".format(
-                    err, self.addr
-                )
+                f"Unable to connect to island, aborting! Error information: {err}. Server: {self.addr}"
             )
+
             assert False
 
     def get_jwt_from_server(self):
-        resp = requests.post(  # noqa: DUO123
-            self.addr + "api/auth",
+        resp = requests.post(
+            f"{self.addr}api/auth",
             json={"username": NO_AUTH_CREDS, "password": NO_AUTH_CREDS},
             verify=False,
         )
+
         if resp.status_code == 401:
             raise AuthenticationFailedError
         return resp.json()["access_token"]
 
     def try_set_island_to_no_password(self):
-        requests.patch(  # noqa: DUO123
-            self.addr + "api/environment", json={"server_config": "standard"}, verify=False
+        requests.patch(
+            f"{self.addr}api/environment",
+            json={"server_config": "standard"},
+            verify=False,
         )
 
     class _Decorators:
@@ -119,4 +121,4 @@ class MonkeyIslandRequests(object):
 
     @_Decorators.refresh_jwt_token
     def get_jwt_header(self):
-        return {"Authorization": "Bearer " + self.token}
+        return {"Authorization": f"Bearer {self.token}"}

@@ -31,8 +31,9 @@ def process_telemetry(telemetry_json):
         if telem_category in TELEMETRY_CATEGORY_TO_PROCESSING_FUNC:
             TELEMETRY_CATEGORY_TO_PROCESSING_FUNC[telem_category](telemetry_json)
         else:
-            logger.info("Got unknown type of telemetry: %s" % telem_category)
+            logger.info(f"Got unknown type of telemetry: {telem_category}")
     except Exception as ex:
         logger.error(
-            "Exception caught while processing telemetry. Info: {}".format(ex), exc_info=True
+            f"Exception caught while processing telemetry. Info: {ex}",
+            exc_info=True,
         )

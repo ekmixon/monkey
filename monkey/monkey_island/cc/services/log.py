@@ -10,8 +10,7 @@ class LogService:
 
     @staticmethod
     def get_log_by_monkey_id(monkey_id):
-        log = mongo.db.log.find_one({"monkey_id": monkey_id})
-        if log:
+        if log := mongo.db.log.find_one({"monkey_id": monkey_id}):
             log_file = database.gridfs.get(log["file_id"])
             monkey_label = monkey_island.cc.services.node.NodeService.get_monkey_label(
                 monkey_island.cc.services.node.NodeService.get_monkey_by_id(log["monkey_id"])

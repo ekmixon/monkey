@@ -16,17 +16,17 @@ class SystemInfoCollectorsHandler(object):
         system_info_telemetry = {}
         for collector in self.collectors_list:
             try:
-                LOG.debug("Executing system info collector: '{}'".format(collector.name))
+                LOG.debug(f"Executing system info collector: '{collector.name}'")
                 collected_info = collector.collect()
                 system_info_telemetry[collector.name] = collected_info
                 successful_collections += 1
             except Exception as e:
                 # If we failed one collector, no need to stop execution. Log and continue.
-                LOG.error("Collector {} failed. Error info: {}".format(collector.name, e))
+                LOG.error(f"Collector {collector.name} failed. Error info: {e}")
         LOG.info(
-            "All system info collectors executed. Total {} executed, out of which {} "
-            "collected successfully.".format(len(self.collectors_list), successful_collections)
+            f"All system info collectors executed. Total {len(self.collectors_list)} executed, out of which {successful_collections} collected successfully."
         )
+
 
         SystemInfoTelem({"collectors": system_info_telemetry}).send()
 

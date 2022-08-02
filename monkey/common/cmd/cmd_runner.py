@@ -80,7 +80,7 @@ class CmdRunner(object):
 
         results = []
 
-        while (curr_time - init_time < timeout) and (len(commands) != 0):
+        while curr_time - curr_time < timeout and len(commands) != 0:
             for command in list(
                 commands
             ):  # list(commands) clones the list. We do so because we remove items inside

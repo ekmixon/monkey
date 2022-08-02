@@ -54,8 +54,8 @@ class EnvironmentConfig:
             "deployment": self.deployment,
         }
         if self.aws:
-            config_dict.update({"aws": self.aws})
-        config_dict.update(self.user_creds.to_dict())
+            config_dict["aws"] = self.aws
+        config_dict |= self.user_creds.to_dict()
         return config_dict
 
     def add_user(self, credentials: UserCreds):

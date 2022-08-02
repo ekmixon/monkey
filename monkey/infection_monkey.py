@@ -1,4 +1,4 @@
 from infection_monkey.main import main
 
-if "__main__" == __name__:
+if __name__ == "__main__":
     main()

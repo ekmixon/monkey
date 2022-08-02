@@ -94,10 +94,10 @@ class AWSExporter(Exporter):
         product_arn = "arn:aws:securityhub:{region}:{arn}".format(
             region=region, arn=configured_product_arn
         )
-        instance_arn = "arn:aws:ec2:" + str(region) + ":instance:{instance_id}"
+        instance_arn = f"arn:aws:ec2:{str(region)}" + ":instance:{instance_id}"
         # Not suppressing error here on purpose.
         account_id = AwsInstance().get_account_id()
-        logger.debug("aws account id acquired: {}".format(account_id))
+        logger.debug(f"aws account id acquired: {account_id}")
 
         aws_finding = {
             "SchemaVersion": "2018-10-08",
@@ -107,9 +107,10 @@ class AWSExporter(Exporter):
             "AwsAccountId": account_id,
             "RecordState": "ACTIVE",
             "Types": ["Software and Configuration Checks/Vulnerabilities/CVE"],
-            "CreatedAt": datetime.now().isoformat() + "Z",
-            "UpdatedAt": datetime.now().isoformat() + "Z",
+            "CreatedAt": f"{datetime.now().isoformat()}Z",
+            "UpdatedAt": f"{datetime.now().isoformat()}Z",
         }
+
 
         processor = AWSExporter._get_issue_processor(findings_dict, issue)
 
@@ -133,7 +134,7 @@ class AWSExporter(Exporter):
     @staticmethod
     def _send_findings(findings_list, region):
         try:
-            logger.debug("Trying to acquire securityhub boto3 client in " + region)
+            logger.debug(f"Trying to acquire securityhub boto3 client in {region}")
             security_hub_client = boto3.client("securityhub", region_name=region)
             logger.debug("Client acquired: {0}".format(repr(security_hub_client)))
 
@@ -143,18 +144,15 @@ class AWSExporter(Exporter):
             import_response = security_hub_client.batch_import_findings(Findings=findings_list)
             logger.debug("Import findings response: {0}".format(repr(import_response)))
 
-            if import_response["ResponseMetadata"]["HTTPStatusCode"] == 200:
-                return True
-            else:
-                return False
+            return import_response["ResponseMetadata"]["HTTPStatusCode"] == 200
         except UnknownServiceError as e:
             logger.warning(
-                "AWS exporter called but AWS-CLI security hub service is not installed. "
-                "Error: {}".format(e)
+                f"AWS exporter called but AWS-CLI security hub service is not installed. Error: {e}"
             )
+
             return False
         except Exception as e:
-            logger.exception("AWS security hub findings failed to send. Error: {}".format(e))
+            logger.exception(f"AWS security hub findings failed to send. Error: {e}")
             return False
 
     @staticmethod
@@ -168,15 +166,15 @@ class AWSExporter(Exporter):
     def _build_generic_finding(
         severity, title, description, recommendation, instance_arn, instance_id=None
     ):
-        finding = {
+        return {
             "Severity": {"Product": severity, "Normalized": 100},
-            "Resources": AWSExporter._get_finding_resource(instance_id, instance_arn),
+            "Resources": AWSExporter._get_finding_resource(
+                instance_id, instance_arn
+            ),
             "Title": title,
             "Description": description,
             "Remediation": {"Recommendation": {"Text": recommendation}},
         }
-
-        return finding
 
     @staticmethod
     def _handle_tunnel_issue(issue, instance_arn):

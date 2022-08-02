@@ -67,8 +67,7 @@ class WindowsInfoCollector(InfoCollector):
     def get_mimikatz_info(self):
         LOG.info("Gathering mimikatz info")
         try:
-            credentials = MimikatzCredentialCollector.get_creds()
-            if credentials:
+            if credentials := MimikatzCredentialCollector.get_creds():
                 if "credentials" in self.info:
                     self.info["credentials"].update(credentials)
                 self.info["mimikatz"] = credentials

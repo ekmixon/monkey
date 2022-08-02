@@ -13,8 +13,7 @@ class ClearCommandHistory(PBA):
         super().__init__(name=POST_BREACH_CLEAR_CMD_HISTORY)
 
     def run(self):
-        results = [pba.run() for pba in self.clear_command_history_PBA_list()]
-        if results:
+        if results := [pba.run() for pba in self.clear_command_history_PBA_list()]:
             PostBreachTelem(self, results).send()
 
     def clear_command_history_PBA_list(self):

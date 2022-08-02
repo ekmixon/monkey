@@ -31,7 +31,7 @@ class ElasticFinger(HostFinger):
         :return: Success/failure, data is saved in the host struct
         """
         try:
-            url = "http://%s:%s/" % (host.ip_addr, ES_PORT)
+            url = f"http://{host.ip_addr}:{ES_PORT}/"
             with closing(requests.get(url, timeout=ES_HTTP_TIMEOUT)) as req:
                 data = json.loads(req.text)
                 self.init_service(host.services, ES_SERVICE, ES_PORT)

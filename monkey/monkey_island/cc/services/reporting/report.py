@@ -100,7 +100,7 @@ class ReportService:
     @staticmethod
     def get_azure_issues():
         creds = ReportService.get_azure_creds()
-        machines = set([instance["origin"] for instance in creds])
+        machines = {instance["origin"] for instance in creds}
 
         logger.info("Azure issues generated for reporting")
 
@@ -108,9 +108,11 @@ class ReportService:
             {
                 "type": "azure_password",
                 "machine": machine,
-                "users": set(
-                    [instance["username"] for instance in creds if instance["origin"] == machine]
-                ),
+                "users": {
+                    instance["username"]
+                    for instance in creds
+                    if instance["origin"] == machine
+                },
             }
             for machine in machines
         ]
@@ -148,8 +150,7 @@ class ReportService:
             NodeService.get_displayed_node_by_id(monkey["_id"], True)
             for monkey in mongo.db.monkey.find({}, {"_id": 1})
         ]
-        nodes = nodes_without_monkeys + nodes_with_monkeys
-        return nodes
+        return nodes_without_monkeys + nodes_with_monkeys
 
     @staticmethod
     def get_stolen_creds():
@@ -186,7 +187,7 @@ class ReportService:
             creds = telem["data"]["info"]["credentials"]
             domain_name = telem["data"]["machine"]["domain_name"]
             ip = telem["data"]["machine"]["ip_addr"]
-            origin = domain_name if domain_name else ip
+            origin = domain_name or ip
             formatted_creds.extend(ReportService._format_creds_for_reporting(telem, creds, origin))
         return formatted_creds
 
@@ -201,20 +202,19 @@ class ReportService:
         if len(monkey_creds) == 0:
             return []
 
-        for user in monkey_creds:
-            for cred_type in CRED_TYPE_DICT:
-                if cred_type not in monkey_creds[user] or not monkey_creds[user][cred_type]:
-                    continue
-                username = (
-                    monkey_creds[user]["username"] if "username" in monkey_creds[user] else user
-                )
-                cred_row = {
-                    "username": username,
-                    "type": CRED_TYPE_DICT[cred_type],
-                    "origin": origin,
-                }
-                if cred_row not in creds:
-                    creds.append(cred_row)
+        for user, cred_type in itertools.product(monkey_creds, CRED_TYPE_DICT):
+            if cred_type not in monkey_creds[user] or not monkey_creds[user][cred_type]:
+                continue
+            username = (
+                monkey_creds[user]["username"] if "username" in monkey_creds[user] else user
+            )
+            cred_row = {
+                "username": username,
+                "type": CRED_TYPE_DICT[cred_type],
+                "origin": origin,
+            }
+            if cred_row not in creds:
+                creds.append(cred_row)
         return creds
 
     @staticmethod
@@ -278,8 +278,7 @@ class ReportService:
         exploiter_type = exploit["data"]["exploiter"]
         exploiter_descriptor = ExploiterDescriptorEnum.get_by_class_name(exploiter_type)
         processor = exploiter_descriptor.processor()
-        exploiter_info = processor.get_exploit_info_by_dict(exploiter_type, exploit)
-        return exploiter_info
+        return processor.get_exploit_info_by_dict(exploiter_type, exploit)
 
     @staticmethod
     def get_exploits() -> List[dict]:
@@ -357,23 +356,27 @@ class ReportService:
         cross_segment_issues = []
 
         for monkey in mongo.db.monkey.find({}, {"ip_addresses": 1, "hostname": 1}):
-            ip_in_src = None
-            ip_in_dst = None
-            for ip_addr in monkey["ip_addresses"]:
-                if source_subnet_range.is_in_range(str(ip_addr)):
-                    ip_in_src = ip_addr
-                    break
+            ip_in_src = next(
+                (
+                    ip_addr
+                    for ip_addr in monkey["ip_addresses"]
+                    if source_subnet_range.is_in_range(str(ip_addr))
+                ),
+                None,
+            )
 
             # No point searching the dst subnet if there are no IPs in src subnet.
             if not ip_in_src:
                 continue
 
-            for ip_addr in monkey["ip_addresses"]:
-                if target_subnet_range.is_in_range(str(ip_addr)):
-                    ip_in_dst = ip_addr
-                    break
-
-            if ip_in_dst:
+            if ip_in_dst := next(
+                (
+                    ip_addr
+                    for ip_addr in monkey["ip_addresses"]
+                    if target_subnet_range.is_in_range(str(ip_addr))
+                ),
+                None,
+            ):
                 cross_segment_issues.append(
                     {
                         "source": ip_in_src,
@@ -504,14 +507,16 @@ class ReportService:
 
     @staticmethod
     def get_machine_aws_instance_id(hostname):
-        aws_instance_id_list = list(
-            mongo.db.monkey.find({"hostname": hostname}, {"aws_instance_id": 1})
-        )
-        if aws_instance_id_list:
-            if "aws_instance_id" in aws_instance_id_list[0]:
-                return str(aws_instance_id_list[0]["aws_instance_id"])
-        else:
+        if not (
+            aws_instance_id_list := list(
+                mongo.db.monkey.find(
+                    {"hostname": hostname}, {"aws_instance_id": 1}
+                )
+            )
+        ):
             return None
+        if "aws_instance_id" in aws_instance_id_list[0]:
+            return str(aws_instance_id_list[0]["aws_instance_id"])
 
     @staticmethod
     def get_manual_monkey_hostnames():
@@ -580,10 +585,10 @@ class ReportService:
     @staticmethod
     def _is_stolen_credential_issue(issue: dict) -> bool:
         # Only credential exploiter issues have 'credential_type'
-        return "credential_type" in issue and (
-            issue["credential_type"] == CredentialType.PASSWORD.value
-            or issue["credential_type"] == CredentialType.HASH.value
-        )
+        return "credential_type" in issue and issue["credential_type"] in [
+            CredentialType.PASSWORD.value,
+            CredentialType.HASH.value,
+        ]
 
     @staticmethod
     def _is_zerologon_pass_restore_failed(issue: dict):
@@ -685,9 +690,9 @@ class ReportService:
         :return: True if report is the latest one, False if there isn't a report or its not the
         latest.
         """
-        latest_report_doc = mongo.db.report.find_one({}, {"meta.latest_monkey_modifytime": 1})
-
-        if latest_report_doc:
+        if latest_report_doc := mongo.db.report.find_one(
+            {}, {"meta.latest_monkey_modifytime": 1}
+        ):
             report_latest_modifytime = latest_report_doc["meta"]["latest_monkey_modifytime"]
             latest_monkey_modifytime = Monkey.get_latest_modifytime()
             return report_latest_modifytime == latest_monkey_modifytime
@@ -703,7 +708,7 @@ class ReportService:
         delete_result = mongo.db.report.delete_many({})
         if mongo.db.report.count_documents({}) != 0:
             raise RuntimeError(
-                "Report cache not cleared. DeleteResult: " + delete_result.raw_result
+                f"Report cache not cleared. DeleteResult: {delete_result.raw_result}"
             )
 
     @staticmethod

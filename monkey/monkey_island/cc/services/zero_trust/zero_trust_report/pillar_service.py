@@ -13,11 +13,11 @@ class PillarService:
 
     @staticmethod
     def _get_pillars_grades():
-        pillars_grades = []
         all_findings = FindingService.get_all_findings_from_db()
-        for pillar in zero_trust_consts.PILLARS:
-            pillars_grades.append(PillarService.__get_pillar_grade(pillar, all_findings))
-        return pillars_grades
+        return [
+            PillarService.__get_pillar_grade(pillar, all_findings)
+            for pillar in zero_trust_consts.PILLARS
+        ]
 
     @staticmethod
     def __get_pillar_grade(pillar, all_findings):
@@ -31,10 +31,7 @@ class PillarService:
 
         tests_of_this_pillar = zero_trust_consts.PILLARS_TO_TESTS[pillar]
 
-        test_unexecuted = {}
-        for test in tests_of_this_pillar:
-            test_unexecuted[test] = True
-
+        test_unexecuted = {test: True for test in tests_of_this_pillar}
         for finding in all_findings:
             test_unexecuted[finding.test] = False
             test_info = zero_trust_consts.TESTS_MAP[finding.test]
@@ -62,17 +59,20 @@ class PillarService:
 
     @staticmethod
     def _get_pillars_to_statuses():
-        results = {}
-        for pillar in zero_trust_consts.PILLARS:
-            results[pillar] = PillarService.__get_status_of_single_pillar(pillar)
-
-        return results
+        return {
+            pillar: PillarService.__get_status_of_single_pillar(pillar)
+            for pillar in zero_trust_consts.PILLARS
+        }
 
     @staticmethod
     def __get_status_of_single_pillar(pillar):
         all_findings = FindingService.get_all_findings_from_db()
         grade = PillarService.__get_pillar_grade(pillar, all_findings)
-        for status in zero_trust_consts.ORDERED_TEST_STATUSES:
-            if grade[status] > 0:
-                return status
-        return zero_trust_consts.STATUS_UNEXECUTED
+        return next(
+            (
+                status
+                for status in zero_trust_consts.ORDERED_TEST_STATUSES
+                if grade[status] > 0
+            ),
+            zero_trust_consts.STATUS_UNEXECUTED,
+        )

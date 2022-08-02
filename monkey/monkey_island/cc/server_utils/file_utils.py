@@ -69,9 +69,7 @@ def _get_file_descriptor_for_new_secure_file_linux(path: str) -> int:
         flags = (
             os.O_RDWR | os.O_CREAT | os.O_EXCL
         )  # read/write, create new, throw error if file exists
-        fd = os.open(path, flags, mode)
-
-        return fd
+        return os.open(path, flags, mode)
 
     except Exception as ex:
         LOG.error(f'Could not create a file at "{path}": {str(ex)}')

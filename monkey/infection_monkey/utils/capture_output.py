@@ -11,8 +11,7 @@ class StdoutCapture:
 
     def get_captured_stdout_output(self) -> str:
         self._new_stdout.seek(0)
-        output = self._new_stdout.read()
-        return output
+        return self._new_stdout.read()
 
     def __exit__(self, _, __, ___) -> None:
         sys.stdout = self._orig_stdout

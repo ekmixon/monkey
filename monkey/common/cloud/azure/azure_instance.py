@@ -8,9 +8,8 @@ from common.cloud.instance import CloudInstance
 from common.common_consts.timeouts import SHORT_REQUEST_TIMEOUT
 
 LATEST_AZURE_METADATA_API_VERSION = "2019-04-30"
-AZURE_METADATA_SERVICE_URL = (
-    "http://169.254.169.254/metadata/instance?api-version=%s" % LATEST_AZURE_METADATA_API_VERSION
-)
+AZURE_METADATA_SERVICE_URL = f"http://169.254.169.254/metadata/instance?api-version={LATEST_AZURE_METADATA_API_VERSION}"
+
 
 logger = logging.getLogger(__name__)
 
@@ -38,16 +37,11 @@ class AzureInstance(CloudInstance):
         self._on_azure = False
 
         try:
-            response = requests.get(
+            if response := requests.get(
                 AZURE_METADATA_SERVICE_URL,
                 headers={"Metadata": "true"},
                 timeout=SHORT_REQUEST_TIMEOUT,
-            )
-
-            # If not on cloud, the metadata URL is non-routable and the connection will fail.
-            # If on AWS, should get 404 since the metadata service URL is different,
-            # so bool(response) will be false.
-            if response:
+            ):
                 logger.debug("Trying to parse Azure metadata.")
                 self.try_parse_response(response)
             else:

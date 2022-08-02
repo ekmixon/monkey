@@ -14,7 +14,7 @@ class TraceTelem(BaseTelem):
         """
         super(TraceTelem, self).__init__()
         self.msg = msg
-        LOG.debug("Trace: %s" % msg)
+        LOG.debug(f"Trace: {msg}")
 
     telem_category = TelemCategoryEnum.TRACE
 

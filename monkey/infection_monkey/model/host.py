@@ -16,30 +16,32 @@ class VictimHost(object):
         return hash(self.ip_addr)
 
     def __eq__(self, other):
-        if not isinstance(other, VictimHost):
-            return False
-
-        return self.ip_addr.__eq__(other.ip_addr)
+        return (
+            self.ip_addr.__eq__(other.ip_addr)
+            if isinstance(other, VictimHost)
+            else False
+        )
 
     def __cmp__(self, other):
-        if not isinstance(other, VictimHost):
-            return -1
-
-        return self.ip_addr.__cmp__(other.ip_addr)
+        return (
+            self.ip_addr.__cmp__(other.ip_addr)
+            if isinstance(other, VictimHost)
+            else -1
+        )
 
     def __repr__(self):
         return "VictimHost({0!r})".format(self.ip_addr)
 
     def __str__(self):
-        victim = "Victim Host %s: " % self.ip_addr
+        victim = f"Victim Host {self.ip_addr}: "
         victim += "OS - ["
         for k, v in list(self.os.items()):
-            victim += "%s-%s " % (k, v)
+            victim += f"{k}-{v} "
         victim += "] Services - ["
         for k, v in list(self.services.items()):
-            victim += "%s-%s " % (k, v)
-        victim += "] ICMP: %s " % (self.icmp)
-        victim += "target monkey: %s" % self.monkey_exe
+            victim += f"{k}-{v} "
+        victim += f"] ICMP: {self.icmp} "
+        victim += f"target monkey: {self.monkey_exe}"
         return victim
 
     def set_default_server(self, default_server):

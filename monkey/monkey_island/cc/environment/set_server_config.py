@@ -54,8 +54,7 @@ def main():
 def parse_args():
     parser = argparse.ArgumentParser()
     parser.add_argument("server_config", choices=["standard", "password", "restore"])
-    args = parser.parse_args()
-    return args
+    return parser.parse_args()
 
 
 def restore_previous_config(config_path):

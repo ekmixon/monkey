@@ -18,7 +18,7 @@ class AttackMitigations(Document):
         try:
             return AttackMitigations.objects.get(technique_id=technique_id)
         except DoesNotExist:
-            raise Exception("Attack technique with id {} does not exist!".format(technique_id))
+            raise Exception(f"Attack technique with id {technique_id} does not exist!")
 
     def add_mitigation(self, mitigation: CourseOfAction):
         mitigation_external_ref_id = MitreApiInterface.get_stix2_external_reference_id(mitigation)

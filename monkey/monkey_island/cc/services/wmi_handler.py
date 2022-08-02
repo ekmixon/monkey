@@ -48,27 +48,23 @@ class WMIHandler(object):
                 )
 
     def build_entity_document(self, entity_info, monkey_id=None):
-        general_properties_dict = {
+        return {
             "SID": str(entity_info["SID"])[4:-1],
             "name": str(entity_info["Name"])[2:-1],
             "machine_id": monkey_id,
             "member_of": [],
             "admin_on_machines": [],
+            "domain_name": None if monkey_id else str(entity_info["Domain"])[2:-1],
         }
-
-        if monkey_id:
-            general_properties_dict["domain_name"] = None
-        else:
-            general_properties_dict["domain_name"] = str(entity_info["Domain"])[2:-1]
-
-        return general_properties_dict
 
     def add_users_to_collection(self):
         for user in self.users_info:
-            if not user.get("LocalAccount"):
-                base_entity = self.build_entity_document(user)
-            else:
-                base_entity = self.build_entity_document(user, self.monkey_id)
+            base_entity = (
+                self.build_entity_document(user, self.monkey_id)
+                if user.get("LocalAccount")
+                else self.build_entity_document(user)
+            )
+
             base_entity["NTLM_secret"] = self.users_secrets.get(base_entity["name"], {}).get(
                 "ntlm_hash"
             )
@@ -80,10 +76,12 @@ class WMIHandler(object):
 
     def add_groups_to_collection(self):
         for group in self.groups_info:
-            if not group.get("LocalAccount"):
-                base_entity = self.build_entity_document(group)
-            else:
-                base_entity = self.build_entity_document(group, self.monkey_id)
+            base_entity = (
+                self.build_entity_document(group, self.monkey_id)
+                if group.get("LocalAccount")
+                else self.build_entity_document(group)
+            )
+
             base_entity["entities_list"] = []
             base_entity["type"] = GROUPTYPE
             self.info_for_mongo[base_entity.get("SID")] = base_entity
@@ -130,9 +128,8 @@ class WMIHandler(object):
             if child_sid and child_sid not in groups_entities_list:
                 groups_entities_list.append(child_sid)
 
-            if child_sid:
-                if child_sid in self.info_for_mongo:
-                    self.info_for_mongo[child_sid]["member_of"].append(group_sid)
+            if child_sid and child_sid in self.info_for_mongo:
+                self.info_for_mongo[child_sid]["member_of"].append(group_sid)
 
     def insert_info_to_mongo(self):
         for entity in list(self.info_for_mongo.values()):
@@ -141,19 +138,18 @@ class WMIHandler(object):
                 mongo.db.groupsandusers.update(
                     {"SID": entity["SID"], "machine_id": entity["machine_id"]}, entity, upsert=True
                 )
+            elif mongo.db.groupsandusers.find_one({"SID": entity["SID"]}):
+                # if entity is domain entity, add the monkey id of current machine to
+                # secrets_location.
+                # (found on this machine)
+                if entity.get("NTLM_secret"):
+                    mongo.db.groupsandusers.update_one(
+                        {"SID": entity["SID"], "type": USERTYPE},
+                        {"$addToSet": {"secret_location": self.monkey_id}},
+                    )
+
             else:
-                # Handlings for domain entities.
-                if not mongo.db.groupsandusers.find_one({"SID": entity["SID"]}):
-                    mongo.db.groupsandusers.insert_one(entity)
-                else:
-                    # if entity is domain entity, add the monkey id of current machine to
-                    # secrets_location.
-                    # (found on this machine)
-                    if entity.get("NTLM_secret"):
-                        mongo.db.groupsandusers.update_one(
-                            {"SID": entity["SID"], "type": USERTYPE},
-                            {"$addToSet": {"secret_location": self.monkey_id}},
-                        )
+                mongo.db.groupsandusers.insert_one(entity)
 
     def update_admins_retrospective(self):
         for profile in self.info_for_mongo:

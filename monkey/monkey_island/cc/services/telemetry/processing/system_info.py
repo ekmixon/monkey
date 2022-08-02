@@ -33,9 +33,7 @@ def safe_process_telemetry(processing_function, telemetry_json):
         processing_function(telemetry_json)
     except Exception as err:
         logger.error(
-            "Error {} while in {} stage of processing telemetry.".format(
-                str(err), processing_function.__name__
-            ),
+            f"Error {str(err)} while in {processing_function.__name__} stage of processing telemetry.",
             exc_info=True,
         )
 
@@ -82,7 +80,7 @@ def process_credential_info(telemetry_json):
 
 def replace_user_dot_with_comma(creds):
     for user in creds:
-        if -1 != user.find("."):
+        if user.find(".") != -1:
             new_user = user.replace(".", ",")
             creds[new_user] = creds.pop(user)
 
@@ -99,9 +97,9 @@ def add_system_info_creds_to_config(creds):
 
 
 def process_wmi_info(telemetry_json):
-    users_secrets = {}
-
     if "wmi" in telemetry_json["data"]:
         monkey_id = NodeService.get_monkey_by_guid(telemetry_json["monkey_guid"]).get("_id")
+        users_secrets = {}
+
         wmi_handler = WMIHandler(monkey_id, telemetry_json["data"]["wmi"], users_secrets)
         wmi_handler.process_and_handle_wmi_info()

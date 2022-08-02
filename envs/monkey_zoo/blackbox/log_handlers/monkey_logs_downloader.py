@@ -15,8 +15,7 @@ class MonkeyLogsDownloader(object):
         LOGGER.info("Downloading each monkey log.")
         all_monkeys = self.island_client.get_all_monkeys_from_db()
         for monkey in all_monkeys:
-            downloaded_log_path = self._download_monkey_log(monkey)
-            if downloaded_log_path:
+            if downloaded_log_path := self._download_monkey_log(monkey):
                 self.monkey_log_paths.append(downloaded_log_path)
 
     def _download_monkey_log(self, monkey):

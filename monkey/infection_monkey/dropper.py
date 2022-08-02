@@ -20,7 +20,7 @@ from infection_monkey.utils.commands import (
     get_monkey_commandline_windows,
 )
 
-if "win32" == sys.platform:
+if sys.platform == "win32":
     from win32process import DETACHED_PROCESS
 else:
     DETACHED_PROCESS = 0
@@ -169,9 +169,10 @@ class MonkeyDrops(object):
                 stdout=subprocess.PIPE,
                 stderr=subprocess.PIPE,
                 close_fds=True,
-                cwd="/".join(dest_path.split("/")[0:-1]),
+                cwd="/".join(dest_path.split("/")[:-1]),
                 creationflags=DETACHED_PROCESS,
             )
+
 
         LOG.info(
             "Executed monkey process (PID=%d) with command line: %s",
@@ -203,8 +204,13 @@ class MonkeyDrops(object):
 
                     # mark the file for removal on next boot
                     dropper_source_path_ctypes = c_char_p(self._config["source_path"])
-                    if 0 == ctypes.windll.kernel32.MoveFileExA(
-                        dropper_source_path_ctypes, None, MOVEFILE_DELAY_UNTIL_REBOOT
+                    if (
+                        ctypes.windll.kernel32.MoveFileExA(
+                            dropper_source_path_ctypes,
+                            None,
+                            MOVEFILE_DELAY_UNTIL_REBOOT,
+                        )
+                        == 0
                     ):
                         LOG.debug(
                             "Error marking source file '%s' for deletion on next boot (error "

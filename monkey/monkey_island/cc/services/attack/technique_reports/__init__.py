@@ -124,13 +124,15 @@ class AttackTechnique(object, metaclass=abc.ABCMeta):
         :return: dict E.g. {'message': 'Brute force used', 'status': 2, 'title': 'T1110 Brute
         force'}
         """
-        data = {}
         status = cls.technique_status()
         title = cls.technique_title()
-        data.update(
-            {"status": status, "title": title, "message": cls.get_message_by_status(status)}
-        )
-        data.update(cls.get_mitigation_by_status(status))
+        data = {} | {
+            "status": status,
+            "title": title,
+            "message": cls.get_message_by_status(status),
+        }
+
+        data |= cls.get_mitigation_by_status(status)
         return data
 
     @classmethod
@@ -142,20 +144,20 @@ class AttackTechnique(object, metaclass=abc.ABCMeta):
 
     @classmethod
     def get_mitigation_by_status(cls, status: ScanStatus) -> dict:
-        if status == ScanStatus.USED.value:
-            mitigation_document = AttackMitigations.get_mitigation_by_technique_id(str(cls.tech_id))
-            return {"mitigations": mitigation_document.to_mongo().to_dict()["mitigations"]}
-        else:
+        if status != ScanStatus.USED.value:
             return {}
+        mitigation_document = AttackMitigations.get_mitigation_by_technique_id(str(cls.tech_id))
+        return {"mitigations": mitigation_document.to_mongo().to_dict()["mitigations"]}
 
     @classmethod
     def is_status_disabled(cls, get_technique_status_and_data) -> bool:
         def check_if_disabled_in_config():
             return (
-                (ScanStatus.DISABLED.value, [])
-                if not cls._is_enabled_in_config()
-                else get_technique_status_and_data()
+                get_technique_status_and_data()
+                if cls._is_enabled_in_config()
+                else (ScanStatus.DISABLED.value, [])
             )
+
 
         return check_if_disabled_in_config
 

@@ -21,11 +21,12 @@ class MonkeyZTFindingService:
         when this function should be used.
         """
         existing_findings = list(MonkeyFinding.objects(test=test, status=status))
-        assert len(existing_findings) < 2, "More than one finding exists for {}:{}".format(
-            test, status
-        )
+        assert (
+            len(existing_findings) < 2
+        ), f"More than one finding exists for {test}:{status}"
 
-        if len(existing_findings) == 0:
+
+        if not existing_findings:
             MonkeyZTFindingService.create_new_finding(test, status, events)
         else:
             # Now we know for sure this is the only one

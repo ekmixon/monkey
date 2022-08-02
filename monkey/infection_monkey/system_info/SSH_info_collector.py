@@ -66,7 +66,7 @@ class SSHCollector(object):
                         if glob.glob(os.path.join(current_path, "*.pub")):
                             # Getting first file in current path with .pub extension(public key)
                             public = glob.glob(os.path.join(current_path, "*.pub"))[0]
-                            LOG.info("Found public key in %s" % public)
+                            LOG.info(f"Found public key in {public}")
                             try:
                                 with open(public) as f:
                                     info["public_key"] = f.read()
@@ -80,10 +80,8 @@ class SSHCollector(object):
                                             private_key = f.read()
                                             if private_key.find("ENCRYPTED") == -1:
                                                 info["private_key"] = private_key
-                                                LOG.info("Found private key in %s" % private)
-                                                T1005Telem(
-                                                    ScanStatus.USED, "SSH key", "Path: %s" % private
-                                                ).send()
+                                                LOG.info(f"Found private key in {private}")
+                                                T1005Telem(ScanStatus.USED, "SSH key", f"Path: {private}").send()
                                             else:
                                                 continue
                                     except (IOError, OSError):
@@ -94,7 +92,7 @@ class SSHCollector(object):
                                     try:
                                         with open(known_hosts) as f:
                                             info["known_hosts"] = f.read()
-                                            LOG.info("Found known_hosts in %s" % known_hosts)
+                                            LOG.info(f"Found known_hosts in {known_hosts}")
                                     except (IOError, OSError):
                                         pass
                                 # If private key found don't search more

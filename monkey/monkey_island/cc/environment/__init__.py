@@ -35,8 +35,7 @@ class Environment(object, metaclass=ABCMeta):
 
     def needs_registration(self) -> bool:
         try:
-            needs_registration = self._try_needs_registration()
-            return needs_registration
+            return self._try_needs_registration()
         except (CredentialsNotRequiredError, AlreadyRegisteredError) as e:
             logger.info(e)
             return False
@@ -53,21 +52,17 @@ class Environment(object, metaclass=ABCMeta):
             raise CredentialsNotRequiredError(
                 "Credentials are not required " "for current environment."
             )
-        else:
-            if self._is_registered():
-                raise AlreadyRegisteredError(
-                    "User has already been registered. " "Reset credentials or login."
-                )
-            return True
+        if self._is_registered():
+            raise AlreadyRegisteredError(
+                "User has already been registered. " "Reset credentials or login."
+            )
+        return True
 
     def _is_registered(self) -> bool:
         return self._credentials_required and self._is_credentials_set_up()
 
     def _is_credentials_set_up(self) -> bool:
-        if self._config and self._config.user_creds:
-            return True
-        else:
-            return False
+        return bool(self._config and self._config.user_creds)
 
     @property
     def testing(self):

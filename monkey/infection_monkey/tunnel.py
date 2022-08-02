@@ -33,11 +33,7 @@ def _set_multicast_socket(timeout=DEFAULT_TIMEOUT, adapter=""):
 
 
 def _check_tunnel(address, port, existing_sock=None):
-    if not existing_sock:
-        sock = _set_multicast_socket()
-    else:
-        sock = existing_sock
-
+    sock = existing_sock or _set_multicast_socket()
     LOG.debug("Checking tunnel %s:%s", address, port)
     is_open, _ = check_tcp_port(address, int(port))
     if not is_open:
@@ -59,14 +55,13 @@ def _check_tunnel(address, port, existing_sock=None):
 def find_tunnel(default=None, attempts=3, timeout=DEFAULT_TIMEOUT):
     l_ips = local_ips()
 
-    if default:
-        if default.find(":") != -1:
-            address, port = default.split(":", 1)
-            if _check_tunnel(address, port):
-                return address, port
+    if default and default.find(":") != -1:
+        address, port = default.split(":", 1)
+        if _check_tunnel(address, port):
+            return address, port
 
     for adapter in l_ips:
-        for attempt in range(0, attempts):
+        for _ in range(attempts):
             try:
                 LOG.info("Trying to find using adapter %s", adapter)
                 sock = _set_multicast_socket(timeout, adapter)
@@ -93,8 +88,6 @@ def find_tunnel(default=None, attempts=3, timeout=DEFAULT_TIMEOUT):
 
             except Exception as exc:
                 LOG.debug("Caught exception in tunnel lookup: %s", exc)
-                continue
-
     return None
 
 
@@ -150,33 +143,32 @@ class MonkeyTunnel(Thread):
         while not self._stopped:
             try:
                 search, address = self._broad_sock.recvfrom(BUFFER_READ)
-                if b"?" == search:
-                    ip_match = get_interface_to_target(address[0])
-                    if ip_match:
+                if search == b"?":
+                    if ip_match := get_interface_to_target(address[0]):
                         answer = "%s:%d" % (ip_match, self.local_port)
                         LOG.debug(
                             "Got tunnel request from %s, answering with %s", address[0], answer
                         )
                         self._broad_sock.sendto(answer.encode(), (address[0], MCAST_PORT))
-                elif b"+" == search:
-                    if not address[0] in self._clients:
+                elif search == b"+":
+                    if address[0] not in self._clients:
                         LOG.debug("Tunnel control: Added %s to watchlist", address[0])
                         self._clients.append(address[0])
-                elif b"-" == search:
+                elif search == b"-":
                     LOG.debug("Tunnel control: Removed %s from watchlist", address[0])
                     self._clients = [client for client in self._clients if client != address[0]]
 
             except socket.timeout:
                 continue
 
-        LOG.info("Stopping tunnel, waiting for clients: %s" % repr(self._clients))
+        LOG.info(f"Stopping tunnel, waiting for clients: {repr(self._clients)}")
 
         # wait till all of the tunnel clients has been disconnected, or no one used the tunnel in
         # QUIT_TIMEOUT seconds
         while self._clients and (time.time() - get_last_serve_time() < QUIT_TIMEOUT):
             try:
                 search, address = self._broad_sock.recvfrom(BUFFER_READ)
-                if b"-" == search:
+                if search == b"-":
                     LOG.debug("Tunnel control: Removed %s from watchlist", address[0])
                     self._clients = [client for client in self._clients if client != address[0]]
             except socket.timeout:

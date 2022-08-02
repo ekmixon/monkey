@@ -45,4 +45,3 @@ def test_get_rule_data():
 
     with pytest.raises(RulePathCreatorNotFound):
         RuleParser.get_rule_data(RAW_SCOUTSUITE_DATA[SERVICES], ExampleRules.NON_EXSISTENT_RULE)
-    pass

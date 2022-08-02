@@ -41,15 +41,16 @@ class FindingService:
     @staticmethod
     def _get_enriched_finding(finding: Finding) -> EnrichedFinding:
         test_info = zero_trust_consts.TESTS_MAP[finding["test"]]
-        enriched_finding = EnrichedFinding(
+        return EnrichedFinding(
             finding_id=str(finding["_id"]),
-            test=test_info[zero_trust_consts.FINDING_EXPLANATION_BY_STATUS_KEY][finding["status"]],
+            test=test_info[zero_trust_consts.FINDING_EXPLANATION_BY_STATUS_KEY][
+                finding["status"]
+            ],
             test_key=finding["test"],
             pillars=test_info[zero_trust_consts.PILLARS_KEY],
             status=finding["status"],
             details=None,
         )
-        return enriched_finding
 
     @staticmethod
     def _get_finding_details(finding: Finding) -> Union[dict, SON]:

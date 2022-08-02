@@ -41,7 +41,7 @@ class NodeStates(Enum):
                 "Multiple groups contain provided keywords. "
                 "Manually build group string to ensure keyword order."
             )
-        elif len(potential_groups) == 0:
+        elif not potential_groups:
             raise NoGroupsFoundException(
                 "No groups found with provided keywords. "
                 "Check for typos and make sure group codes want to find exists."

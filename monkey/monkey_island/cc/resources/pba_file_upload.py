@@ -47,8 +47,7 @@ class FileUpload(flask_restful.Resource):
             request.files["filepond"], (file_type == LINUX_PBA_TYPE)
         )
 
-        response = Response(response=filename, status=200, mimetype="text/plain")
-        return response
+        return Response(response=filename, status=200, mimetype="text/plain")
 
     @staticmethod
     def upload_pba_file(file_storage: FileStorage, is_linux=True):
@@ -79,8 +78,7 @@ class FileUpload(flask_restful.Resource):
         filename_path = (
             PBA_LINUX_FILENAME_PATH if file_type == "PBAlinux" else PBA_WINDOWS_FILENAME_PATH
         )
-        filename = ConfigService.get_config_value(filename_path)
-        if filename:
+        if filename := ConfigService.get_config_value(filename_path):
             PostBreachFilesService.remove_file(filename)
             ConfigService.set_config_value(filename_path, "")
 

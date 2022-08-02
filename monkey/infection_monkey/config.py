@@ -212,13 +212,26 @@ class Configuration(object):
         Returns all combinations of the configurations users and passwords or lm/ntlm hashes
         :return:
         """
-        cred_list = []
-        for cred in product(self.exploit_user_list, self.exploit_password_list, [""], [""]):
-            cred_list.append(cred)
-        for cred in product(self.exploit_user_list, [""], [""], self.exploit_ntlm_hash_list):
-            cred_list.append(cred)
-        for cred in product(self.exploit_user_list, [""], self.exploit_lm_hash_list, [""]):
-            cred_list.append(cred)
+        cred_list = list(
+            product(self.exploit_user_list, self.exploit_password_list, [""], [""])
+        )
+
+        cred_list.extend(
+            iter(
+                product(
+                    self.exploit_user_list, [""], [""], self.exploit_ntlm_hash_list
+                )
+            )
+        )
+
+        cred_list.extend(
+            iter(
+                product(
+                    self.exploit_user_list, [""], self.exploit_lm_hash_list, [""]
+                )
+            )
+        )
+
         return cred_list
 
     @staticmethod
@@ -231,8 +244,7 @@ class Configuration(object):
         :param sensitive_data: the data to hash.
         :return: the hashed data.
         """
-        password_hashed = hashlib.sha512(sensitive_data.encode()).hexdigest()
-        return password_hashed
+        return hashlib.sha512(sensitive_data.encode()).hexdigest()
 
     exploit_user_list = ["Administrator", "root", "user"]
     exploit_password_list = ["Password1!", "1234", "password", "12345678"]

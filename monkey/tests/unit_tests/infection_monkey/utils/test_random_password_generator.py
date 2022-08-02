@@ -10,4 +10,4 @@ def test_get_random_password__length():
 def test_get_random_password__randomness():
     random_password1 = get_random_password()
     random_password2 = get_random_password()
-    assert not random_password1 == random_password2
+    assert random_password1 != random_password2

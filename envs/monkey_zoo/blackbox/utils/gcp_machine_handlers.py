@@ -56,7 +56,7 @@ class GCPHandler(object):
             )
             LOGGER.info("GCP machines successfully started.")
         except Exception as e:
-            LOGGER.error("GCP Handler failed to start GCP machines: %s" % e)
+            LOGGER.error(f"GCP Handler failed to start GCP machines: {e}")
 
     def stop_machines(self, machine_list):
         try:
@@ -65,7 +65,7 @@ class GCPHandler(object):
             )
             LOGGER.info("GCP machines stopped successfully.")
         except Exception as e:
-            LOGGER.error("GCP Handler failed to stop network machines: %s" % e)
+            LOGGER.error(f"GCP Handler failed to stop network machines: {e}")
 
     @staticmethod
     def get_auth_command(key_path):

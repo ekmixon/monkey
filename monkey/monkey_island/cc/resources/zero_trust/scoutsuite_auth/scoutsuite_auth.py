@@ -15,11 +15,10 @@ from monkey_island.cc.services.zero_trust.scoutsuite.scoutsuite_auth_service imp
 class ScoutSuiteAuth(flask_restful.Resource):
     @jwt_required
     def get(self, provider: CloudProviders):
-        if provider == CloudProviders.AWS.value:
-            is_setup, message = is_cloud_authentication_setup(provider)
-            return {"is_setup": is_setup, "message": message}
-        else:
+        if provider != CloudProviders.AWS.value:
             return {"is_setup": False, "message": ""}
+        is_setup, message = is_cloud_authentication_setup(provider)
+        return {"is_setup": is_setup, "message": message}
 
     @jwt_required
     def post(self, provider: CloudProviders):

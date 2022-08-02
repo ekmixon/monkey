@@ -23,8 +23,7 @@ PypykatzCredential = NewType("PypykatzCredential", Dict)
 def get_windows_creds() -> List[WindowsCredentials]:
     pypy_handle = pypykatz.go_live()
     logon_data = pypy_handle.to_dict()
-    windows_creds = _parse_pypykatz_results(logon_data)
-    return windows_creds
+    return _parse_pypykatz_results(logon_data)
 
 
 def _parse_pypykatz_results(pypykatz_data: Dict) -> List[WindowsCredentials]:
@@ -61,12 +60,10 @@ def _is_cred_empty(pypykatz_cred: PypykatzCredential):
 
 
 def _get_windows_cred(pypykatz_cred: PypykatzCredential):
-    password = ""
     ntlm_hash = ""
     lm_hash = ""
     username = pypykatz_cred["username"]
-    if "password" in pypykatz_cred:
-        password = pypykatz_cred["password"]
+    password = pypykatz_cred["password"] if "password" in pypykatz_cred else ""
     if "NThash" in pypykatz_cred:
         ntlm_hash = _hash_to_string(pypykatz_cred["NThash"])
     if "LMhash" in pypykatz_cred:

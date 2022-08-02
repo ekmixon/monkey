@@ -5,11 +5,7 @@ from monkey_island.cc.models.zero_trust.finding import Finding
 class PrincipleService:
     @staticmethod
     def get_principles_status():
-        all_principles_statuses = {}
-
-        # init with empty lists
-        for pillar in zero_trust_consts.PILLARS:
-            all_principles_statuses[pillar] = []
+        all_principles_statuses = {pillar: [] for pillar in zero_trust_consts.PILLARS}
 
         for principle, principle_tests in list(zero_trust_consts.PRINCIPLES_TO_TESTS.items()):
             for pillar in zero_trust_consts.PRINCIPLES_TO_PILLARS[principle]:

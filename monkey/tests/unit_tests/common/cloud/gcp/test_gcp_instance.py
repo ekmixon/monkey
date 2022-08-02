@@ -9,8 +9,7 @@ from common.cloud.gcp.gcp_instance import GCP_METADATA_SERVICE_URL, GcpInstance
 def get_test_gcp_instance(url, **kwargs):
     with requests_mock.Mocker() as m:
         m.get(url, **kwargs)
-        test_gcp_instance_object = GcpInstance()
-        return test_gcp_instance_object
+        return GcpInstance()
 
 
 # good request

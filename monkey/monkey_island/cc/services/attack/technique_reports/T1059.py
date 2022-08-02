@@ -28,10 +28,7 @@ class T1059(AttackTechnique):
         @T1059.is_status_disabled
         def get_technique_status_and_data():
             cmd_data = list(mongo.db.telemetry.aggregate(T1059.query))
-            if cmd_data:
-                status = ScanStatus.USED.value
-            else:
-                status = ScanStatus.UNSCANNED.value
+            status = ScanStatus.USED.value if cmd_data else ScanStatus.UNSCANNED.value
             return (status, cmd_data)
 
         status, cmd_data = get_technique_status_and_data()

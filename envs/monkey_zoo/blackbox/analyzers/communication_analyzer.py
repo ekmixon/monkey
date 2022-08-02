@@ -13,10 +13,10 @@ class CommunicationAnalyzer(Analyzer):
         all_monkeys_communicated = True
         for machine_ip in self.machine_ips:
             if not self.did_monkey_communicate_back(machine_ip):
-                self.log.add_entry("Monkey from {} didn't communicate back".format(machine_ip))
+                self.log.add_entry(f"Monkey from {machine_ip} didn't communicate back")
                 all_monkeys_communicated = False
             else:
-                self.log.add_entry("Monkey from {} communicated back".format(machine_ip))
+                self.log.add_entry(f"Monkey from {machine_ip} communicated back")
         return all_monkeys_communicated
 
     def did_monkey_communicate_back(self, machine_ip):

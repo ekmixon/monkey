@@ -43,10 +43,10 @@ class BootloaderHTTPRequestHandler(BaseHTTPRequestHandler):
             self.end_headers()
             self.wfile.write(r.content)
         except Exception as e:
-            logger.error("Failed to respond to bootloader: {}".format(e))
+            logger.error(f"Failed to respond to bootloader: {e}")
         finally:
             self.connection.close()
 
     @staticmethod
     def get_bootloader_resource_url(server_ip):
-        return "https://" + server_ip + ":" + str(Environment._ISLAND_PORT) + "/api/bootloader/"
+        return f"https://{server_ip}:{str(Environment._ISLAND_PORT)}/api/bootloader/"

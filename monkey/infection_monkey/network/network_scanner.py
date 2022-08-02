@@ -114,10 +114,10 @@ class NetworkScanner(object):
 
     @staticmethod
     def _is_any_ip_in_subnet(ip_addresses, subnet_str):
-        for ip_address in ip_addresses:
-            if NetworkRange.get_range_obj(subnet_str).is_in_range(ip_address):
-                return True
-        return False
+        return any(
+            NetworkRange.get_range_obj(subnet_str).is_in_range(ip_address)
+            for ip_address in ip_addresses
+        )
 
     def scan_machine(self, victim):
         """

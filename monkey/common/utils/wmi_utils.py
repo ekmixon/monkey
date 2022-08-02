@@ -19,10 +19,11 @@ class WMIUtils:
         _wmi = wmi.WMI(moniker=moniker)
 
         try:
-            if not properties:
-                wmi_class = getattr(_wmi, class_name)()
-            else:
-                wmi_class = getattr(_wmi, class_name)(properties)
+            wmi_class = (
+                getattr(_wmi, class_name)(properties)
+                if properties
+                else getattr(_wmi, class_name)()
+            )
 
         except wmi.x_wmi:
             return
